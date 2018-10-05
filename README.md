@@ -16,16 +16,16 @@ package main
 
 import (
 	"github.com/gomodule/redigo/redis"
-	"github.com/redislabs/redisgraph-go"
+	rg "github.com/redislabs/redisgraph-go"
 )
 
 func main() {
 	conn, _ := redis.Dial("tcp", "0.0.0.0:6379")
 	defer conn.Close()
 
-	rg := Graph{}.New("social", conn)
+	graph := rg.Graph{}.New("social", conn)
 
-	john := Node{
+	john := rg.Node{
 		Label: "person",
 		Properties: map[string]interface{}{
 			"name":   "John Doe",
@@ -34,28 +34,28 @@ func main() {
 			"status": "single",
 		},
 	}
-	rg.AddNode(&john)
+	graph.AddNode(&john)
 
-	japan := Node{
+	japan := rg.Node{
 		Label: "country",
 		Properties: map[string]interface{}{
 			"name": "Japan",
 		},
 	}
-	rg.AddNode(&japan)
+	graph.AddNode(&japan)
 
-	edge := Edge{
+	edge := rg.Edge{
 		Source:      &john,
 		Relation:    "visited",
 		Destination: &japan,
 	}
-	rg.AddEdge(&edge)
+	graph.AddEdge(&edge)
 
-	rg.Commit()
+	graph.Commit()
 
 	query := `MATCH (p:person)-[v:visited]->(c:country)
 		   RETURN p.name, p.age, v.purpose, c.name`
-	rs, _ := rg.Query(query)
+	rs, _ := graph.Query(query)
 
 	rs.PrettyPrint()
 }
