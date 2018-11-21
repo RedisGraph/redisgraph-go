@@ -167,6 +167,10 @@ func (g *Graph) Commit() (QueryResult, error) {
 		q += fmt.Sprintf("%s,", e)
 	}
 	q = q[:len(q)-1]
+
+	//We need to zero all of the commands when committing or they will accumulate
+	g.Nodes = make(map[string]*Node)
+
 	return g.Query(q)
 }
 
