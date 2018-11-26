@@ -157,7 +157,7 @@ func (g *Graph) AddEdge(e *Edge) error {
 	return nil
 }
 
-// Commit creates the entire graph.
+// Commit creates the entire graph, but will readd nodes if called again.
 func (g *Graph) Commit() (QueryResult, error) {
 	q := "CREATE "
 	for _, n := range g.Nodes {
@@ -168,6 +168,16 @@ func (g *Graph) Commit() (QueryResult, error) {
 	}
 	q = q[:len(q)-1]
 	return g.Query(q)
+}
+
+// Flush will create the graph and clear it
+func (g *Graph) Flush() (QueryResult, error) {
+	res, err := g.Commit()
+	if err == nil {
+		g.Nodes = make(map[string]*Node)
+		g.Edges = make([]*Edge, 0)
+	}
+	return res, err
 }
 
 // Query executes a query against the graph.
