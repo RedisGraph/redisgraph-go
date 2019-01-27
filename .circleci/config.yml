@@ -5,7 +5,7 @@ version: 2
 jobs:
   build:
     machine:
-      image: circleci/golang:1.9
+      image: circleci/classic:latest
 
     working_directory: /go/src/github.com/RedisGraph/redisgraph-go
     steps:
