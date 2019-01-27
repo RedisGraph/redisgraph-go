@@ -5,12 +5,14 @@ version: 2
 jobs:
   build:
     docker:
-      - image: circleci/golang:1.9	
+      - image: circleci/golang:1.
+      
+      - image: redislabs/redisgraph:edge
+        port: 6379:6379
+        name: redisgraph
 
     working_directory: /go/src/github.com/RedisGraph/redisgraph-go
     steps:
       - checkout
       - run: go get -v -t -d ./...
-      - run: |
-          docker run -d -p 6379:6379 -it --rm --name redisgraph redislabs/redisgraph:edge
-          go test -v ./...
+      - run: go test -v ./...
