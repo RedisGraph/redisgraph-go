@@ -9,7 +9,6 @@ jobs:
       
       - image: redislabs/redisgraph:edge
         port: 6379:6379
-        name: redisgraph
 
     working_directory: /go/src/github.com/RedisGraph/redisgraph-go
     steps:
