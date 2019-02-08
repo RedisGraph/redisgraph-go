@@ -2,6 +2,7 @@
 [![CircleCI](https://circleci.com/gh/RedisGraph/redisgraph-go/tree/master.svg?style=svg)](https://circleci.com/gh/RedisGraph/redisgraph-go/tree/master)
 [![GitHub issues](https://img.shields.io/github/release/RedisGraph/redisgraph-go.svg)](https://github.com/RedisGraph/redisgraph-go/releases/latest)
 [![Codecov](https://codecov.io/gh/RedisGraph/redisgraph-go/branch/master/graph/badge.svg)](https://codecov.io/gh/RedisGraph/redisgraph-go)
+[![GoDoc](https://godoc.org/github.com/RedisGraph/redisgraph-go?status.svg)](https://godoc.org/github.com/RedisGraph/redisgraph-go)
 
 # redisgraph-go
 
