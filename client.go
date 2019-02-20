@@ -4,6 +4,7 @@ import (
 	"crypto/rand"
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/gomodule/redigo/redis"
 	"github.com/olekukonko/tablewriter"
@@ -61,23 +62,24 @@ type Node struct {
 }
 
 func (n *Node) String() string {
-	s := "("
+	s := []string{"("}
 	if n.Alias != "" {
-		s += n.Alias
+		s = append(s, n.Alias)
 	}
 	if n.Label != "" {
-		s += ":" + n.Label
+		s = append(s, ":", n.Label)
 	}
 	if len(n.Properties) > 0 {
-		p := ""
+		p := make([]string, 0, len(n.Properties))
 		for k, v := range n.Properties {
-			p += fmt.Sprintf("%s:%v,", k, quoteString(v))
+			p = append(p, fmt.Sprintf("%s:%v", k, quoteString(v)))
 		}
-		p = p[:len(p)-1]
-		s += "{" + p + "}"
+		s = append(s, "{")
+		s = append(s, strings.Join(p, ","))
+		s = append(s, "}")
 	}
-	s += ")"
-	return s
+	s = append(s, ")")
+	return strings.Join(s, "")
 }
 
 // Edge represents an edge connecting two nodes in the graph.
@@ -89,26 +91,28 @@ type Edge struct {
 }
 
 func (e *Edge) String() string {
-	s := "(" + e.Source.Alias + ")"
+	s := []string{"(", e.Source.Alias, ")"}
 
-	s += "-["
+	s = append(s, "-[")
 	if e.Relation != "" {
-		s += ":" + e.Relation
+		s = append(s, ":", e.Relation)
 	}
 
 	if len(e.Properties) > 0 {
-		p := ""
+		p := make([]string, 0, len(e.Properties))
 		for k, v := range e.Properties {
-			p += fmt.Sprintf("%s:%s,", k, quoteString(v))
+			p = append(p, fmt.Sprintf("%s:%v", k, quoteString(v)))
 		}
-		p = p[:len(p)-1]
-		s += "{" + p + "}"
+		s = append(s, strings.Join(p, ","))
+		s = append(s, "{")
+		s = append(s, p...)
+		s = append(s, "}")
 	}
-	s += "]->"
+	s = append(s, "]->")
 
-	s += "(" + e.Destination.Alias + ")"
+	s = append(s, "(", e.Destination.Alias, ")")
 
-	return s
+	return strings.Join(s, "")
 }
 
 // Graph represents a graph, which is a collection of nodes and edges.
@@ -159,14 +163,14 @@ func (g *Graph) AddEdge(e *Edge) error {
 
 // Commit creates the entire graph, but will readd nodes if called again.
 func (g *Graph) Commit() (QueryResult, error) {
-	q := "CREATE "
+	items := make([]string, 0, len(g.Nodes)+len(g.Edges))
 	for _, n := range g.Nodes {
-		q += fmt.Sprintf("%s,", n)
+		items = append(items, n.String())
 	}
 	for _, e := range g.Edges {
-		q += fmt.Sprintf("%s,", e)
+		items = append(items, e.String())
 	}
-	q = q[:len(q)-1]
+	q := "CREATE " + strings.Join(items, ",")
 	return g.Query(q)
 }
 
