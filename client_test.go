@@ -26,7 +26,6 @@ func TestExample(t *testing.T) {
 	err := rg.AddNode(&john)
 	if err != nil {
 		t.Error(err)
-		t.Fail()
 	}
 
 	japan := Node{
@@ -38,7 +37,6 @@ func TestExample(t *testing.T) {
 	err = rg.AddNode(&japan)
 	if err != nil {
 		t.Error(err)
-		t.Fail()
 	}
 
 	edge := Edge{
@@ -49,13 +47,11 @@ func TestExample(t *testing.T) {
 	err = rg.AddEdge(&edge)
 	if err != nil {
 		t.Error(err)
-		t.Fail()
 	}
 
 	_, err = rg.Commit()
 	if err != nil {
 		t.Error(err)
-		t.Fail()
 	}
 
 	query := `MATCH (p:person)-[v:visited]->(c:country)
@@ -63,7 +59,6 @@ func TestExample(t *testing.T) {
 	rs, err := rg.Query(query)
 	if err != nil {
 		t.Error(err)
-		t.Fail()
 	}
 
 	rs.PrettyPrint()
@@ -86,23 +81,19 @@ func TestFlush(t *testing.T) {
 		err := rg.AddNode(&family)
 		if err != nil {
 			t.Error(err)
-			t.Fail()
 		}
 		_, err = rg.Flush()
 		if err != nil {
 			t.Error(err)
-			t.Fail()
 		}
 	}
 	query := `MATCH (p:person) RETURN p.name`
 	rs, err := rg.Query(query)
 	if err != nil {
 		t.Error(err)
-		t.Fail()
 	}
 	if len(rs.Results) > 4 {
 		t.Errorf("There Should only be 4 entries but we get: %d", len(rs.Results))
-		t.Fail()
 	}
 
 }
