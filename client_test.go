@@ -23,7 +23,10 @@ func TestExample(t *testing.T) {
 			"status": "single",
 		},
 	}
-	rg.AddNode(&john)
+	err := rg.AddNode(&john)
+	if err != nil {
+		t.Error(err)
+	}
 
 	japan := Node{
 		Label: "country",
@@ -31,20 +34,32 @@ func TestExample(t *testing.T) {
 			"name": "Japan",
 		},
 	}
-	rg.AddNode(&japan)
+	err = rg.AddNode(&japan)
+	if err != nil {
+		t.Error(err)
+	}
 
 	edge := Edge{
 		Source:      &john,
 		Relation:    "visited",
 		Destination: &japan,
 	}
-	rg.AddEdge(&edge)
+	err = rg.AddEdge(&edge)
+	if err != nil {
+		t.Error(err)
+	}
 
-	rg.Commit()
+	_, err = rg.Commit()
+	if err != nil {
+		t.Error(err)
+	}
 
 	query := `MATCH (p:person)-[v:visited]->(c:country)
 		   RETURN p.name, p.age, v.purpose, c.name`
-	rs, _ := rg.Query(query)
+	rs, err := rg.Query(query)
+	if err != nil {
+		t.Error(err)
+	}
 
 	rs.PrettyPrint()
 }
@@ -63,11 +78,20 @@ func TestFlush(t *testing.T) {
 				"name": fmt.Sprintf("%s Rubble", user),
 			},
 		}
-		rg.AddNode(&family)
-		rg.Flush()
+		err := rg.AddNode(&family)
+		if err != nil {
+			t.Error(err)
+		}
+		_, err = rg.Flush()
+		if err != nil {
+			t.Error(err)
+		}
 	}
 	query := `MATCH (p:person) RETURN p.name`
-	rs, _ := rg.Query(query)
+	rs, err := rg.Query(query)
+	if err != nil {
+		t.Error(err)
+	}
 	if len(rs.Results) > 4 {
 		t.Errorf("There Should only be 4 entries but we get: %d", len(rs.Results))
 	}
