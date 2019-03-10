@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"os"
 	"strings"
+	"strconv"
+
 
 	"github.com/gomodule/redigo/redis"
 	"github.com/olekukonko/tablewriter"
@@ -192,16 +194,44 @@ func (g *Graph) Query(q string) (QueryResult, error) {
 		return qr, err
 	}
 
+	// Result-set is an array of arrays.
 	results, err := redis.Values(r[0], nil)
 	if err != nil {
 		return qr, err
 	}
 
-	qr.Results = make([][]string, len(results))
+	records := make([][]interface{}, len(results))
+
 	for i, result := range results {
-		qr.Results[i], err = redis.Strings(result, nil)
+		// Parse each record.
+		records[i], err = redis.Values(result, nil)
 		if err != nil {
 			return qr, err
+		}
+	}
+
+	// Convert each record item to string.
+	qr.Results = make([][]string, len(records))
+	for i, record := range records {
+		qr.Results[i] = make([]string, len(record))
+		for j, item := range record {
+		    switch item.(type) {
+		    case int64:
+				n, err := redis.Int64(item, nil)
+				if err != nil {
+					return qr, err
+				}
+		        qr.Results[i][j] = strconv.FormatInt(n, 10)
+		        break
+
+		    case string:
+		        qr.Results[i][j], err = redis.String(item, nil)
+		        break
+
+		    default:
+				qr.Results[i][j], err = redis.String(item, nil)
+		        break
+		    }
 		}
 	}
 

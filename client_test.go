@@ -71,7 +71,6 @@ func TestFlush(t *testing.T) {
 	rg := Graph{}.New("rubbles", conn)
 	users := [3]string{"Barney", "Betty", "Bam-Bam"}
 	for _, user := range users {
-
 		family := Node{
 			Label: "person",
 			Properties: map[string]interface{}{
