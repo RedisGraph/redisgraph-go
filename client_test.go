@@ -1,98 +1,55 @@
 package redisgraph
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/gomodule/redigo/redis"
 )
 
-func TestExample(t *testing.T) {
+func TestGraphCreation(t *testing.T) {
+	// Setup.
 	conn, _ := redis.Dial("tcp", "0.0.0.0:6379")
 	defer conn.Close()
 
 	conn.Do("FLUSHALL")
-	rg := Graph{}.New("social", conn)
+	rg := GraphNew("social", conn)
 
-	john := Node{
-		Label: "person",
-		Properties: map[string]interface{}{
-			"name":   "John Doe",
-			"age":    33,
-			"gender": "male",
-			"status": "single",
-		},
-	}
-	err := rg.AddNode(&john)
+	// Create 2 nodes connect via a single edge.
+	japan := NodeNew(0, "country", "j", nil)
+	john := NodeNew(0, "person", "p", nil)
+	edge := EdgeNew(0, "visited", john, japan, nil)
+
+	// Set node properties.
+	john.SetProperty("name", "John Doe")
+	john.SetProperty("age", 33)
+	john.SetProperty("gender", "male")
+	john.SetProperty("status", "single")
+
+	// Introduce entities to graph.
+	rg.AddNode(john)
+	rg.AddNode(japan)
+	rg.AddEdge(edge)
+
+	// Flush graph to DB.
+	resp, err := rg.Commit()
 	if err != nil {
 		t.Error(err)
 	}
 
-	japan := Node{
-		Label: "country",
-		Properties: map[string]interface{}{
-			"name": "Japan",
-		},
+	// Validate response.
+	if(resp.results != nil) {
+		t.FailNow()
 	}
-	err = rg.AddNode(&japan)
-	if err != nil {
-		t.Error(err)
+	if(resp.statistics["Labels added"] != 2) {
+		t.FailNow()
 	}
-
-	edge := Edge{
-		Source:      &john,
-		Relation:    "visited",
-		Destination: &japan,
-	}
-	err = rg.AddEdge(&edge)
-	if err != nil {
-		t.Error(err)
-	}
-
-	_, err = rg.Commit()
-	if err != nil {
-		t.Error(err)
-	}
-
-	query := `MATCH (p:person)-[v:visited]->(c:country)
-		   RETURN p.name, p.age, v.purpose, c.name`
-	rs, err := rg.Query(query)
-	if err != nil {
-		t.Error(err)
-	}
-
-	rs.PrettyPrint()
-}
-
-func TestFlush(t *testing.T) {
-	conn, _ := redis.Dial("tcp", "0.0.0.0:6379")
-	defer conn.Close()
-	conn.Do("FLUSHALL")
-	rg := Graph{}.New("rubbles", conn)
-	users := [3]string{"Barney", "Betty", "Bam-Bam"}
-	for _, user := range users {
-		family := Node{
-			Label: "person",
-			Properties: map[string]interface{}{
-				"name": fmt.Sprintf("%s Rubble", user),
-			},
-		}
-		err := rg.AddNode(&family)
-		if err != nil {
-			t.Error(err)
-		}
-		_, err = rg.Flush()
-		if err != nil {
-			t.Error(err)
-		}
-	}
-	query := `MATCH (p:person) RETURN p.name`
-	rs, err := rg.Query(query)
-	if err != nil {
-		t.Error(err)
-	}
-	if len(rs.Results) > 4 {
-		t.Errorf("There Should only be 4 entries but we get: %d", len(rs.Results))
-	}
-
+   	if(resp.statistics["Nodes created"] != 2) {
+   		t.FailNow()
+   	}
+   	if(resp.statistics["Properties set"] != 4) {
+   		t.FailNow()
+   	}
+   	if(resp.statistics["Relationships created"] != 1) {
+   		t.FailNow()
+   	}
 }
