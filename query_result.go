@@ -10,6 +10,16 @@ import (
 	"github.com/olekukonko/tablewriter"
 )
 
+const (
+	LABELS_ADDED string = "Labels added"
+	NODES_CREATED string = "Nodes created"
+	NODES_DELETED string = "Nodes deleted"
+	RELATIONSHIPS_DELETED string = "Relationships deleted"
+	PROPERTIES_SET string = "Properties set"
+	RELATIONSHIPS_CREATED string = "Relationships created"
+	INTERNAL_EXECUTION_TIME string = "internal execution time"
+)
+
 type ResultSetColumnTypes int
 const (
     COLUMN_UNKNOWN ResultSetColumnTypes = iota
@@ -158,7 +168,9 @@ func (qr *QueryResult) parseNode(cell interface{}) *Node {
     rawProps, _ := redis.Values(c[2], nil)
     properties := qr.parseProperties(rawProps)
 
-    return NodeNew(id, label, "", properties)
+    n := NodeNew(label, "", properties)
+    n.ID = id
+    return n
 }
 
 func (qr *QueryResult) parseEdge(cell interface{}) *Edge {
@@ -177,8 +189,9 @@ func (qr *QueryResult) parseEdge(cell interface{}) *Edge {
     dest_node_id, _ := redis.Uint64(c[3], nil)
     rawProps,_ := redis.Values(c[4], nil)
     properties := qr.parseProperties(rawProps)
-    e := EdgeNew(id, relation, nil, nil, properties)
-    
+    e := EdgeNew(relation, nil, nil, properties)
+
+    e.ID = id
     e.srcNodeID = src_node_id
 	e.destNodeID = dest_node_id
     return e
@@ -241,4 +254,41 @@ func (qr *QueryResult) PrettyPrint() {
 	}
 
 	fmt.Fprintf(os.Stdout, "\n")
+}
+
+
+func (qr *QueryResult) getStat(stat string) int {
+	if val, ok := qr.statistics[stat]; ok {
+		return int(val)
+	} else {
+		return 0
+	}
+}
+
+func (qr *QueryResult) LabelsAdded() int {
+	return qr.getStat(LABELS_ADDED)
+}
+
+func (qr *QueryResult) NodesCreated() int {
+	return qr.getStat(NODES_CREATED)
+}
+
+func (qr *QueryResult) NodesDeleted() int {
+	return qr.getStat(NODES_DELETED)
+}
+
+func (qr *QueryResult) PropertiesSet() int {
+	return qr.getStat(PROPERTIES_SET)
+}
+
+func (qr *QueryResult) RelationshipsCreated() int {
+	return qr.getStat(RELATIONSHIPS_CREATED)
+}
+
+func (qr *QueryResult) RelationshipsDeleted() int {
+	return qr.getStat(RELATIONSHIPS_DELETED)
+}
+
+func (qr *QueryResult) RunTime() int {
+	return qr.getStat(INTERNAL_EXECUTION_TIME)
 }

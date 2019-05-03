@@ -17,15 +17,28 @@ type Edge struct {
 	graph *Graph
 }
 
-func EdgeNew(id uint64, relation string, srcNode *Node, destNode *Node, properties map[string]interface{}) *Edge {
+func EdgeNew(relation string, srcNode *Node, destNode *Node, properties map[string]interface{}) *Edge {
+	p := properties 
+	if p == nil {
+		p = make(map[string]interface{})
+	}
+
 	 return &Edge{
-	 	ID:id,
 	 	Relation: relation,
 	 	Source: srcNode,
 	 	Destination: destNode,
-	 	Properties: properties,
+	 	Properties: p,
 	 	graph: nil,	 	
 	 }
+}
+
+func (e *Edge) SetProperty(key string, value interface{}) {
+	e.Properties[key] = value
+}
+
+func (e *Edge) GetProperty(key string) interface{} {
+	v,_ := e.Properties[key]
+	return v
 }
 
 func (e Edge) SourceNodeID() uint64 {

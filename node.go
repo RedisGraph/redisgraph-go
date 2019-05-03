@@ -14,15 +14,14 @@ type Node struct {
 	graph *Graph
 }
 
-func NodeNew(id uint64, label string, alias string, properties map[string]interface{}) *Node {
+func NodeNew(label string, alias string, properties map[string]interface{}) *Node {
 
 	p := properties 
 	if p == nil {
 		p = make(map[string]interface{})
 	}
 
-	return &Node{
-	 	ID: id, 
+	return &Node{ 
 	 	Label: label,
 	 	Alias: alias,
 	 	Properties: p,

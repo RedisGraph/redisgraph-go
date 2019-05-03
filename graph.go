@@ -3,6 +3,7 @@ package redisgraph
 import (
 	"fmt"
 	"strings"
+	"sync"
 
 	"github.com/gomodule/redigo/redis"
 )
@@ -16,6 +17,7 @@ type Graph struct {
 	labels []string 			// List of node labels.
 	relationshipTypes []string 	// List of relation types.
 	properties []string 		// List of properties.
+	mutex sync.Mutex 			// Lock, used for updating internal state.
 }
 
 // New creates a new graph.
@@ -114,15 +116,19 @@ func (g *Graph) Merge(p string) (*QueryResult, error) {
 
 func (g *Graph) getLabel(lblIdx int) string {
 	if lblIdx >= len(g.labels) {
-		// Missing label
-		// refresh label mapping table.
-		g.labels = g.Labels()
+		// Missing label, refresh label mapping table.
+		g.mutex.Lock()
 
-		// Retry.
+		// Recheck now that we've got the lock.
 		if lblIdx >= len(g.labels) {
-			// Error!
-			panic("Unknow label index.")
+			g.labels = g.Labels()
+			// Retry.
+			if lblIdx >= len(g.labels) {
+				// Error!
+				panic("Unknow label index.")
+			}
 		}
+		g.mutex.Unlock()
 	}
 
 	return g.labels[lblIdx]
@@ -130,15 +136,19 @@ func (g *Graph) getLabel(lblIdx int) string {
 
 func (g *Graph) getRelation(relIdx int) string {
 	if relIdx >= len(g.relationshipTypes) {
-		// Missing relation type
-		// refresh relation type mapping table.
-		g.relationshipTypes = g.RelationshipTypes()
+		// Missing relation type, refresh relation type mapping table.
+		g.mutex.Lock()
 
-		// Retry.
+		// Recheck now that we've got the lock.
 		if relIdx >= len(g.relationshipTypes) {
-			// Error!
-			panic("Unknow relation type index.")
+			g.relationshipTypes = g.RelationshipTypes()
+			// Retry.
+			if relIdx >= len(g.relationshipTypes) {
+				// Error!
+				panic("Unknow relation type index.")
+			}
 		}
+		g.mutex.Unlock()
 	}
 
 	return g.relationshipTypes[relIdx]
@@ -146,15 +156,20 @@ func (g *Graph) getRelation(relIdx int) string {
 
 func (g *Graph) getProperty(propIdx int) string {
 	if propIdx >= len(g.properties) {
-		// Missing property
-		// refresh property mapping table.
-		g.properties = g.PropertyKeys()
+		// Missing property, refresh property mapping table.
+		g.mutex.Lock()
 
-		// Retry.
+		// Recheck now that we've got the lock.
 		if propIdx >= len(g.properties) {
-			// Error!
-			panic("Unknow property index.")
+			g.properties = g.PropertyKeys()
+
+			// Retry.
+			if propIdx >= len(g.properties) {
+				// Error!
+				panic("Unknow property index.")
+			}
 		}
+		g.mutex.Unlock()
 	}
 
 	return g.properties[propIdx]
