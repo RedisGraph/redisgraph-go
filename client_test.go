@@ -3,7 +3,6 @@ package redisgraph
 import (
 	"testing"
 	"os"
-	"time"
 	"github.com/stretchr/testify/assert"
 	"github.com/gomodule/redigo/redis"
 )

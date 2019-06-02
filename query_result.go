@@ -249,8 +249,8 @@ func (qr *QueryResult) PrettyPrint() {
 	}
 	table.Render()
 
-	for _, stat := range qr.statistics {
-		fmt.Fprintf(os.Stdout, "\n%s", stat)
+	for k, v := range qr.statistics {
+		fmt.Fprintf(os.Stdout, "\n%s %f", k, v)
 	}
 
 	fmt.Fprintf(os.Stdout, "\n")
