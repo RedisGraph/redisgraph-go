@@ -1,10 +1,11 @@
 package redisgraph
 
 import (
-	"testing"
 	"os"
-	"github.com/stretchr/testify/assert"
+	"testing"
+
 	"github.com/gomodule/redigo/redis"
+	"github.com/stretchr/testify/assert"
 )
 
 var graph Graph
@@ -24,7 +25,7 @@ func createGraph() {
 	john.SetProperty("age", 33)
 	john.SetProperty("gender", "male")
 	john.SetProperty("status", "single")
-	
+
 	japan.SetProperty("name", "Japan")
 	japan.SetProperty("population", 126800000)
 
@@ -51,10 +52,10 @@ func shutdown() {
 }
 
 func TestMain(m *testing.M) {
-    setup()
-    code := m.Run() 
-    shutdown()
-    os.Exit(code)
+	setup()
+	code := m.Run()
+	shutdown()
+	os.Exit(code)
 }
 
 func TestMatchQuery(t *testing.T) {
@@ -63,7 +64,7 @@ func TestMatchQuery(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	
+
 	assert.Equal(t, len(res.results), 1, "expecting 1 result record")
 
 	s, ok := (res.results[0][0]).(*Node)
@@ -83,7 +84,7 @@ func TestMatchQuery(t *testing.T) {
 	assert.Equal(t, s.GetProperty("age"), 33, "Unexpected property value.")
 	assert.Equal(t, s.GetProperty("gender"), "male", "Unexpected property value.")
 	assert.Equal(t, s.GetProperty("status"), "single", "Unexpected property value.")
-	
+
 	assert.Equal(t, e.GetProperty("year"), 2017, "Unexpected property value.")
 
 	assert.Equal(t, d.GetProperty("name"), "Japan", "Unexpected property value.")
@@ -96,9 +97,9 @@ func TestCreateQuery(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	
+
 	assert.True(t, res.Empty(), "Expecting empty result-set")
-	
+
 	// Validate statistics.
 	assert.Equal(t, res.NodesCreated(), 1, "Expecting a single node to be created.")
 	assert.Equal(t, res.PropertiesSet(), 1, "Expecting a songle property to be added.")
@@ -108,8 +109,20 @@ func TestCreateQuery(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	
+
 	assert.False(t, res.Empty(), "Expecting resultset to include a single node.")
 	w := (res.results[0][0]).(*Node)
 	assert.Equal(t, w.Label, "WorkPlace", "Unexpected node label.")
+}
+func TestRuntimeError(t *testing.T) {
+	defer func() {
+		if r := recover(); r != nil {
+			assert.Equal(t, r, redis.Error("Type mismatch: expected Integer but was String "))
+		}
+	}()
+
+	q := "CREATE ()"
+	graph.Query(q)
+	q = "RETURN abs('q')"
+	graph.Query(q)
 }
