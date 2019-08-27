@@ -1,10 +1,11 @@
 package redisgraph
 
 import (
-	"testing"
 	"os"
-	"github.com/stretchr/testify/assert"
+	"testing"
+
 	"github.com/gomodule/redigo/redis"
+	"github.com/stretchr/testify/assert"
 )
 
 var graph Graph
@@ -24,7 +25,7 @@ func createGraph() {
 	john.SetProperty("age", 33)
 	john.SetProperty("gender", "male")
 	john.SetProperty("status", "single")
-	
+
 	japan.SetProperty("name", "Japan")
 	japan.SetProperty("population", 126800000)
 
@@ -51,10 +52,10 @@ func shutdown() {
 }
 
 func TestMain(m *testing.M) {
-    setup()
-    code := m.Run() 
-    shutdown()
-    os.Exit(code)
+	setup()
+	code := m.Run()
+	shutdown()
+	os.Exit(code)
 }
 
 func TestMatchQuery(t *testing.T) {
@@ -63,7 +64,7 @@ func TestMatchQuery(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	
+
 	assert.Equal(t, len(res.results), 1, "expecting 1 result record")
 
 	s, ok := (res.results[0][0]).(*Node)
@@ -83,7 +84,7 @@ func TestMatchQuery(t *testing.T) {
 	assert.Equal(t, s.GetProperty("age"), 33, "Unexpected property value.")
 	assert.Equal(t, s.GetProperty("gender"), "male", "Unexpected property value.")
 	assert.Equal(t, s.GetProperty("status"), "single", "Unexpected property value.")
-	
+
 	assert.Equal(t, e.GetProperty("year"), 2017, "Unexpected property value.")
 
 	assert.Equal(t, d.GetProperty("name"), "Japan", "Unexpected property value.")
@@ -96,9 +97,9 @@ func TestCreateQuery(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	
+
 	assert.True(t, res.Empty(), "Expecting empty result-set")
-	
+
 	// Validate statistics.
 	assert.Equal(t, res.NodesCreated(), 1, "Expecting a single node to be created.")
 	assert.Equal(t, res.PropertiesSet(), 1, "Expecting a songle property to be added.")
@@ -108,8 +109,68 @@ func TestCreateQuery(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	
+
 	assert.False(t, res.Empty(), "Expecting resultset to include a single node.")
 	w := (res.results[0][0]).(*Node)
 	assert.Equal(t, w.Label, "WorkPlace", "Unexpected node label.")
+}
+
+func TestArray(t *testing.T) {
+
+	graph.Flush()
+	graph.Query("MATCH (n) DELETE n")
+
+	a := NodeNew("Person", "a", nil)
+	b := NodeNew("Person", "b", nil)
+
+	a.SetProperty("name", "a")
+	a.SetProperty("age", 32)
+	a.SetProperty("array", []interface{}{0, 1, 2})
+
+	b.SetProperty("name", "b")
+	b.SetProperty("age", 30)
+	b.SetProperty("array", []interface{}{3, 4, 5})
+
+	q := "CREATE (:person{name:'a',age:32,array:[0,1,2]}), CREATE (:person{name:'b',age:30,array:[3,4,5]})"
+	res, err := graph.Query(q)
+	if err != nil {
+		t.Error(err)
+	}
+
+	_, err = graph.Commit()
+	if err != nil {
+		panic(err)
+	}
+
+	q = "WITH [0,1,2] as x return x"
+	res, err = graph.Query(q)
+	if err != nil {
+		t.Error(err)
+	}
+
+	assert.Equal(t, len(res.results), 1, "expecting 1 result record")
+
+	assert.Equal(t, []interface{}{0, 1, 2}, res.results[0][0])
+
+	q = "unwind([0,1,2]) as x return x"
+	res, err = graph.Query(q)
+	if err != nil {
+		t.Error(err)
+	}
+	assert.Equal(t, len(res.results), 3, "expecting 3 result record")
+
+	for i := 0; i < 3; i++ {
+		assert.Equal(t, i, res.results[i][0])
+	}
+
+	q = "MATCH(n) return collect(n) as x"
+	res, err = graph.Query(q)
+	if err != nil {
+		t.Error(err)
+	}
+
+	assert.Equal(t, 1, len(res.results), "expecting 1 results record")
+
+	assert.ElementsMatchf(t, []interface{}{a, b}, res.results[0][0], "arrays not equal")
+
 }

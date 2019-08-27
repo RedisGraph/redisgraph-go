@@ -2,21 +2,42 @@ package redisgraph
 
 import (
 	"crypto/rand"
+	"fmt"
+	"reflect"
+	"strings"
 )
 
-func QuoteString(i interface{}) interface{} {
-	switch x := i.(type) {
-	case string:
-		if len(x) == 0 {
+// go array to string is [1 2 3] for [1, 2, 3] array
+// cypher expects comma separated array
+func arrayToString(arr interface{}) interface{} {
+	v := reflect.ValueOf(arr)
+	var arrayLength = v.Len()
+	strArray := []string{}
+	for i := 0; i < arrayLength; i++ {
+		strArray = append(strArray, fmt.Sprintf("%v", ToString(v.Index(i))))
+	}
+	return "[" + strings.Join(strArray[:], ",") + "]"
+}
+
+func ToString(i interface{}) interface{} {
+	v := reflect.ValueOf(i)
+	switch reflect.TypeOf(i).Kind() {
+	case reflect.String:
+		s := v.String()
+		if len(s) == 0 {
 			return "\"\""
 		}
-		if x[0] != '"' {
-			x = "\"" + x
+		if s[0] != '"' {
+			s = "\"" + s
 		}
-		if x[len(x)-1] != '"' {
-			x += "\""
+		if s[len(s)-1] != '"' {
+			s += "\""
 		}
-		return x
+		return s
+	case reflect.Slice:
+		return arrayToString(i)
+	case reflect.Array:
+		return arrayToString(i)
 	default:
 		return i
 	}

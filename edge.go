@@ -7,29 +7,29 @@ import (
 
 // Edge represents an edge connecting two nodes in the graph.
 type Edge struct {
-	ID 			uint64
+	ID          uint64
 	Relation    string
 	Source      *Node
-	Destination *Node	
+	Destination *Node
 	Properties  map[string]interface{}
-	srcNodeID	uint64
-	destNodeID	uint64
-	graph *Graph
+	srcNodeID   uint64
+	destNodeID  uint64
+	graph       *Graph
 }
 
 func EdgeNew(relation string, srcNode *Node, destNode *Node, properties map[string]interface{}) *Edge {
-	p := properties 
+	p := properties
 	if p == nil {
 		p = make(map[string]interface{})
 	}
 
-	 return &Edge{
-	 	Relation: relation,
-	 	Source: srcNode,
-	 	Destination: destNode,
-	 	Properties: p,
-	 	graph: nil,	 	
-	 }
+	return &Edge{
+		Relation:    relation,
+		Source:      srcNode,
+		Destination: destNode,
+		Properties:  p,
+		graph:       nil,
+	}
 }
 
 func (e *Edge) SetProperty(key string, value interface{}) {
@@ -37,12 +37,12 @@ func (e *Edge) SetProperty(key string, value interface{}) {
 }
 
 func (e *Edge) GetProperty(key string) interface{} {
-	v,_ := e.Properties[key]
+	v, _ := e.Properties[key]
 	return v
 }
 
 func (e Edge) SourceNodeID() uint64 {
-	if(e.Source != nil) {
+	if e.Source != nil {
 		return e.Source.ID
 	} else {
 		return e.srcNodeID
@@ -50,7 +50,7 @@ func (e Edge) SourceNodeID() uint64 {
 }
 
 func (e Edge) DestNodeID() uint64 {
-	if(e.Source != nil) {
+	if e.Source != nil {
 		return e.Destination.ID
 	} else {
 		return e.destNodeID
@@ -64,7 +64,7 @@ func (e Edge) String() string {
 
 	p := make([]string, 0, len(e.Properties))
 	for k, v := range e.Properties {
-		p = append(p, fmt.Sprintf("%s:%v", k, QuoteString(v)))
+		p = append(p, fmt.Sprintf("%s:%v", k, ToString(v)))
 	}
 
 	s := fmt.Sprintf("{%s}", strings.Join(p, ","))
@@ -83,7 +83,7 @@ func (e Edge) Encode() string {
 	if len(e.Properties) > 0 {
 		p := make([]string, 0, len(e.Properties))
 		for k, v := range e.Properties {
-			p = append(p, fmt.Sprintf("%s:%v", k, QuoteString(v)))
+			p = append(p, fmt.Sprintf("%s:%v", k, ToString(v)))
 		}
 
 		s = append(s, "{")
