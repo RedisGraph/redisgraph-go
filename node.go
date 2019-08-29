@@ -11,22 +11,22 @@ type Node struct {
 	Label      string
 	Alias      string
 	Properties map[string]interface{}
-	graph *Graph
+	graph      *Graph
 }
 
 func NodeNew(label string, alias string, properties map[string]interface{}) *Node {
 
-	p := properties 
+	p := properties
 	if p == nil {
 		p = make(map[string]interface{})
 	}
 
-	return &Node{ 
-	 	Label: label,
-	 	Alias: alias,
-	 	Properties: p,
-	 	graph: nil,
-	 }
+	return &Node{
+		Label:      label,
+		Alias:      alias,
+		Properties: p,
+		graph:      nil,
+	}
 }
 
 func (n *Node) SetProperty(key string, value interface{}) {
@@ -34,7 +34,7 @@ func (n *Node) SetProperty(key string, value interface{}) {
 }
 
 func (n Node) GetProperty(key string) interface{} {
-	v,_ := n.Properties[key]
+	v, _ := n.Properties[key]
 	return v
 }
 
@@ -45,7 +45,7 @@ func (n Node) String() string {
 
 	p := make([]string, 0, len(n.Properties))
 	for k, v := range n.Properties {
-		p = append(p, fmt.Sprintf("%s:%v", k, QuoteString(v)))
+		p = append(p, fmt.Sprintf("%s:%v", k, ToString(v)))
 	}
 
 	s := fmt.Sprintf("{%s}", strings.Join(p, ","))
@@ -55,7 +55,7 @@ func (n Node) String() string {
 // String makes Node satisfy the Stringer interface.
 func (n Node) Encode() string {
 	s := []string{"("}
-	
+
 	if n.Alias != "" {
 		s = append(s, n.Alias)
 	}
@@ -67,7 +67,7 @@ func (n Node) Encode() string {
 	if len(n.Properties) > 0 {
 		p := make([]string, 0, len(n.Properties))
 		for k, v := range n.Properties {
-			p = append(p, fmt.Sprintf("%s:%v", k, QuoteString(v)))
+			p = append(p, fmt.Sprintf("%s:%v", k, ToString(v)))
 		}
 
 		s = append(s, "{")

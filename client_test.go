@@ -120,26 +120,16 @@ func TestArray(t *testing.T) {
 	graph.Flush()
 	graph.Query("MATCH (n) DELETE n")
 
-	a := NodeNew("Person", "a", nil)
-	b := NodeNew("Person", "b", nil)
-
-	a.SetProperty("name", "a")
-	a.SetProperty("age", 32)
-	a.SetProperty("array", []interface{}{0, 1, 2})
-
-	b.SetProperty("name", "b")
-	b.SetProperty("age", 30)
-	b.SetProperty("array", []interface{}{3, 4, 5})
-
-	q := "CREATE (:person{name:'a',age:32,array:[0,1,2]}), CREATE (:person{name:'b',age:30,array:[3,4,5]})"
+	q := "CREATE (:person{name:'a',age:32,array:[0,1,2]})"
 	res, err := graph.Query(q)
 	if err != nil {
 		t.Error(err)
 	}
 
-	_, err = graph.Commit()
+	q = "CREATE (:person{name:'b',age:30,array:[3,4,5]})"
+	res, err = graph.Query(q)
 	if err != nil {
-		panic(err)
+		t.Error(err)
 	}
 
 	q = "WITH [0,1,2] as x return x"
@@ -170,6 +160,19 @@ func TestArray(t *testing.T) {
 	}
 
 	assert.Equal(t, 1, len(res.results), "expecting 1 results record")
+
+	a := NodeNew("person", "", nil)
+	b := NodeNew("person", "", nil)
+
+	a.SetProperty("name", "a")
+	a.SetProperty("age", 32)
+	a.SetProperty("array", []interface{}{0, 1, 2})
+	a.ID = 3
+
+	b.SetProperty("name", "b")
+	b.SetProperty("age", 30)
+	b.SetProperty("array", []interface{}{3, 4, 5})
+	b.ID = 2
 
 	assert.ElementsMatchf(t, []interface{}{a, b}, res.results[0][0], "arrays not equal")
 
