@@ -176,19 +176,21 @@ func TestArray(t *testing.T) {
 
 	assert.Equal(t, 2, len(arr))
 
-	res_a := arr[0].(*Node)
-	res_b := arr[1].(*Node)
-	if res_a.GetProperty("name") != "a" {
-		res_a = arr[1].(*Node)
-		res_b = arr[0].(*Node)
+	resA := arr[0].(*Node)
+	resB := arr[1].(*Node)
+	// the order of values in the array returned by collect operation is not defined
+	// check for the node that contains the name "a" and set it to be resA
+	if resA.GetProperty("name") != "a" {
+		resA = arr[1].(*Node)
+		resB = arr[0].(*Node)
 	}
 
-	assert.Equal(t, a.GetProperty("name"), res_a.GetProperty("name"), "Unexpected property value.")
-	assert.Equal(t, a.GetProperty("age"), res_a.GetProperty("age"), "Unexpected property value.")
-	assert.Equal(t, a.GetProperty("array"), res_a.GetProperty("array"), "Unexpected property value.")
+	assert.Equal(t, a.GetProperty("name"), resA.GetProperty("name"), "Unexpected property value.")
+	assert.Equal(t, a.GetProperty("age"), resA.GetProperty("age"), "Unexpected property value.")
+	assert.Equal(t, a.GetProperty("array"), resA.GetProperty("array"), "Unexpected property value.")
 
-	assert.Equal(t, b.GetProperty("name"), res_b.GetProperty("name"), "Unexpected property value.")
-	assert.Equal(t, b.GetProperty("age"), res_b.GetProperty("age"), "Unexpected property value.")
-	assert.Equal(t, b.GetProperty("array"), res_b.GetProperty("array"), "Unexpected property value.")
+	assert.Equal(t, b.GetProperty("name"), resB.GetProperty("name"), "Unexpected property value.")
+	assert.Equal(t, b.GetProperty("age"), resB.GetProperty("age"), "Unexpected property value.")
+	assert.Equal(t, b.GetProperty("array"), resB.GetProperty("array"), "Unexpected property value.")
 
 }
