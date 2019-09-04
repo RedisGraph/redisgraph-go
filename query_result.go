@@ -204,11 +204,10 @@ func (qr *QueryResult) parseEdge(cell interface{}) *Edge {
 func (qr *QueryResult) parseArray(cell interface{}) []interface{} {
 	var array = cell.([]interface{})
 	var arrayLength = len(array)
-	var res = make([]interface{}, arrayLength)
 	for i := 0; i < arrayLength; i++ {
-		res[i] = qr.parseScalar(array[i].([]interface{}))
+		array[i] = qr.parseScalar(array[i].([]interface{}))
 	}
-	return res
+	return array
 }
 
 func (qr *QueryResult) parseScalar(cell []interface{}) interface{} {

@@ -159,21 +159,36 @@ func TestArray(t *testing.T) {
 		t.Error(err)
 	}
 
-	assert.Equal(t, 1, len(res.results), "expecting 1 results record")
-
 	a := NodeNew("person", "", nil)
 	b := NodeNew("person", "", nil)
 
 	a.SetProperty("name", "a")
 	a.SetProperty("age", 32)
 	a.SetProperty("array", []interface{}{0, 1, 2})
-	a.ID = 3
 
 	b.SetProperty("name", "b")
 	b.SetProperty("age", 30)
 	b.SetProperty("array", []interface{}{3, 4, 5})
-	b.ID = 2
 
-	assert.ElementsMatchf(t, []interface{}{a, b}, res.results[0][0], "arrays not equal")
+	assert.Equal(t, 1, len(res.results), "expecting 1 results record")
+
+	arr := res.results[0][0].([]interface{})
+
+	assert.Equal(t, 2, len(arr))
+
+	res_a := arr[0].(*Node)
+	res_b := arr[1].(*Node)
+	if res_a.GetProperty("name") != "a" {
+		res_a = arr[1].(*Node)
+		res_b = arr[0].(*Node)
+	}
+
+	assert.Equal(t, a.GetProperty("name"), res_a.GetProperty("name"), "Unexpected property value.")
+	assert.Equal(t, a.GetProperty("age"), res_a.GetProperty("age"), "Unexpected property value.")
+	assert.Equal(t, a.GetProperty("array"), res_a.GetProperty("array"), "Unexpected property value.")
+
+	assert.Equal(t, b.GetProperty("name"), res_b.GetProperty("name"), "Unexpected property value.")
+	assert.Equal(t, b.GetProperty("age"), res_b.GetProperty("age"), "Unexpected property value.")
+	assert.Equal(t, b.GetProperty("array"), res_b.GetProperty("array"), "Unexpected property value.")
 
 }
