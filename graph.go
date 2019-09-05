@@ -10,26 +10,26 @@ import (
 
 // Graph represents a graph, which is a collection of nodes and edges.
 type Graph struct {
-	Id string
-	Nodes map[string]*Node
-	Edges []*Edge
-	Conn  redis.Conn
-	labels []string 			// List of node labels.
-	relationshipTypes []string 	// List of relation types.
-	properties []string 		// List of properties.
-	mutex sync.Mutex 			// Lock, used for updating internal state.
+	Id                string
+	Nodes             map[string]*Node
+	Edges             []*Edge
+	Conn              redis.Conn
+	labels            []string   // List of node labels.
+	relationshipTypes []string   // List of relation types.
+	properties        []string   // List of properties.
+	mutex             sync.Mutex // Lock, used for updating internal state.
 }
 
 // New creates a new graph.
 func GraphNew(Id string, conn redis.Conn) Graph {
-	g := Graph {
-		Id:  Id,
-		Nodes: make(map[string]*Node, 0),
-		Edges: make([]*Edge, 0),
-		Conn:  conn,
-		labels: make([]string, 0),
+	g := Graph{
+		Id:                Id,
+		Nodes:             make(map[string]*Node, 0),
+		Edges:             make([]*Edge, 0),
+		Conn:              conn,
+		labels:            make([]string, 0),
 		relationshipTypes: make([]string, 0),
-		properties: make([]string, 0),
+		properties:        make([]string, 0),
 	}
 	return g
 }
@@ -179,53 +179,53 @@ func (g *Graph) getProperty(propIdx int) string {
 
 // CallProcedure invokes procedure.
 func (g *Graph) CallProcedure(procedure string, yield []string, args ...interface{}) (*QueryResult, error) {
-    q := fmt.Sprintf("CALL %s(", procedure)
-    
-    tmp := make([]string, 0, len(args))
+	q := fmt.Sprintf("CALL %s(", procedure)
+
+	tmp := make([]string, 0, len(args))
 	for arg := range args {
-		tmp = append(tmp, QuoteString(arg).(string))
+		tmp = append(tmp, ToString(arg).(string))
 	}
 	q += fmt.Sprintf("%s)", strings.Join(tmp, ","))
 
 	if yield != nil && len(yield) > 0 {
-        q += fmt.Sprintf(" YIELD %s", strings.Join(yield, ","))
+		q += fmt.Sprintf(" YIELD %s", strings.Join(yield, ","))
 	}
 
-    return g.Query(q)
+	return g.Query(q)
 }
 
 // Labels, retrieves all node labels.
 func (g *Graph) Labels() []string {
-    qr,_ := g.CallProcedure("db.labels", nil)
-    
-    l := make([]string, len(qr.results))
+	qr, _ := g.CallProcedure("db.labels", nil)
 
-    for idx, r := range(qr.results) {
-    	l[idx] = r[0].(string)
-    }
-    return l
+	l := make([]string, len(qr.results))
+
+	for idx, r := range qr.results {
+		l[idx] = r[0].(string)
+	}
+	return l
 }
 
 // RelationshipTypes, retrieves all edge relationship types.
 func (g *Graph) RelationshipTypes() []string {
-    qr,_ := g.CallProcedure("db.relationshipTypes", nil)
+	qr, _ := g.CallProcedure("db.relationshipTypes", nil)
 
-    rt := make([]string, len(qr.results))
+	rt := make([]string, len(qr.results))
 
-    for idx, r := range(qr.results) {
-    	rt[idx] = r[0].(string)
-    }
-    return rt
+	for idx, r := range qr.results {
+		rt[idx] = r[0].(string)
+	}
+	return rt
 }
 
 // PropertyKeys, retrieves all properties names.
 func (g *Graph) PropertyKeys() []string {
-    qr,_ := g.CallProcedure("db.propertyKeys", nil)
+	qr, _ := g.CallProcedure("db.propertyKeys", nil)
 
-    p := make([]string, len(qr.results))
+	p := make([]string, len(qr.results))
 
-    for idx, r := range(qr.results) {
-    	p[idx] = r[0].(string)
-    }
-    return p
+	for idx, r := range qr.results {
+		p[idx] = r[0].(string)
+	}
+	return p
 }
