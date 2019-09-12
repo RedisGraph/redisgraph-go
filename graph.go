@@ -104,8 +104,7 @@ func (g *Graph) Query(q string) (*QueryResult, error) {
 		return nil, err
 	}
 
-	qr := QueryResultNew(g, r)
-	return qr, nil
+	return QueryResultNew(g, r)
 }
 
 // Merge pattern

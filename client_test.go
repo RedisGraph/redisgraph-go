@@ -115,8 +115,19 @@ func TestCreateQuery(t *testing.T) {
 	assert.Equal(t, w.Label, "WorkPlace", "Unexpected node label.")
 }
 
-func TestArray(t *testing.T) {
+func TestErrorReporting(t *testing.T) {
+	q := "RETURN toupper(5)"
+	res, err := graph.Query(q)
+	assert.Nil(t, res)
+	assert.NotNil(t, err)
 
+	q = "MATCH (p:Person) RETURN toupper(p.age)"
+	res, err = graph.Query(q)
+	assert.Nil(t, res)
+	assert.NotNil(t, err)
+}
+
+func TestArray(t *testing.T) {
 	graph.Flush()
 	graph.Query("MATCH (n) DELETE n")
 
@@ -192,5 +203,4 @@ func TestArray(t *testing.T) {
 	assert.Equal(t, b.GetProperty("name"), resB.GetProperty("name"), "Unexpected property value.")
 	assert.Equal(t, b.GetProperty("age"), resB.GetProperty("age"), "Unexpected property value.")
 	assert.Equal(t, b.GetProperty("array"), resB.GetProperty("array"), "Unexpected property value.")
-
 }

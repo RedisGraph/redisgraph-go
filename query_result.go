@@ -56,7 +56,7 @@ type QueryResult struct {
 	graph      *Graph
 }
 
-func QueryResultNew(g *Graph, response interface{}) *QueryResult {
+func QueryResultNew(g *Graph, response interface{}) (*QueryResult, error) {
 	qr := &QueryResult{
 		results:    nil,
 		statistics: nil,
@@ -68,6 +68,12 @@ func QueryResultNew(g *Graph, response interface{}) *QueryResult {
 	}
 
 	r, _ := redis.Values(response, nil)
+
+	// Check to see if we're encountered a run-time error.
+	if err, ok := r[len(r)-1].(redis.Error); ok {
+		return nil, err
+	}
+
 	if len(r) == 1 {
 		qr.parseStatistics(r[0])
 	} else {
@@ -75,7 +81,7 @@ func QueryResultNew(g *Graph, response interface{}) *QueryResult {
 		qr.parseStatistics(r[2])
 	}
 
-	return qr
+	return qr, nil
 }
 
 func (qr *QueryResult) Empty() bool {
