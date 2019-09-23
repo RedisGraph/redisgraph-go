@@ -44,25 +44,25 @@ const (
 )
 
 type QueryResultHeader struct {
-	column_names []string
-	column_types []ResultSetColumnTypes
+	ColumnNames []string
+	ColumnTypes []ResultSetColumnTypes
 }
 
-// QueryResult represents the results of a query.
+// QueryResult represents the Results of a query.
 type QueryResult struct {
-	results    [][]interface{}
-	statistics map[string]float64
-	header     QueryResultHeader
+	Results    [][]interface{}
+	Statistics map[string]float64
+	Header     QueryResultHeader
 	graph      *Graph
 }
 
 func QueryResultNew(g *Graph, response interface{}) (*QueryResult, error) {
 	qr := &QueryResult{
-		results:    nil,
-		statistics: nil,
-		header: QueryResultHeader{
-			column_names: make([]string, 0),
-			column_types: make([]ResultSetColumnTypes, 0),
+		Results:    nil,
+		Statistics: nil,
+		Header: QueryResultHeader{
+			ColumnNames: make([]string, 0),
+			ColumnTypes: make([]ResultSetColumnTypes, 0),
 		},
 		graph: g,
 	}
@@ -85,7 +85,7 @@ func QueryResultNew(g *Graph, response interface{}) (*QueryResult, error) {
 }
 
 func (qr *QueryResult) Empty() bool {
-	return len(qr.results) == 0
+	return len(qr.Results) == 0
 }
 
 func (qr *QueryResult) parseResults(raw_result_set []interface{}) {
@@ -96,12 +96,12 @@ func (qr *QueryResult) parseResults(raw_result_set []interface{}) {
 
 func (qr *QueryResult) parseStatistics(raw_statistics interface{}) {
 	statistics, _ := redis.Strings(raw_statistics, nil)
-	qr.statistics = make(map[string]float64)
+	qr.Statistics = make(map[string]float64)
 
 	for _, rs := range statistics {
 		v := strings.Split(rs, ": ")
 		f, _ := strconv.ParseFloat(strings.Split(v[1], " ")[0], 64)
-		qr.statistics[v[0]] = f
+		qr.Statistics[v[0]] = f
 	}
 }
 
@@ -113,22 +113,22 @@ func (qr *QueryResult) parseHeader(raw_header interface{}) {
 		ct, _ := redis.Int(c[0], nil)
 		cn, _ := redis.String(c[1], nil)
 
-		qr.header.column_types = append(qr.header.column_types, ResultSetColumnTypes(ct))
-		qr.header.column_names = append(qr.header.column_names, cn)
+		qr.Header.ColumnTypes = append(qr.Header.ColumnTypes, ResultSetColumnTypes(ct))
+		qr.Header.ColumnNames = append(qr.Header.ColumnNames, cn)
 	}
 }
 
 func (qr *QueryResult) parseRecords(raw_result_set []interface{}) {
 	records, _ := redis.Values(raw_result_set[1], nil)
 
-	qr.results = make([][]interface{}, len(records))
+	qr.Results = make([][]interface{}, len(records))
 
 	for i, r := range records {
 		cells, _ := redis.Values(r, nil)
 		record := make([]interface{}, len(cells))
 
 		for idx, c := range cells {
-			t := qr.header.column_types[idx]
+			t := qr.Header.ColumnTypes[idx]
 			switch t {
 			case COLUMN_SCALAR:
 				s, _ := redis.Values(c, nil)
@@ -144,7 +144,7 @@ func (qr *QueryResult) parseRecords(raw_result_set []interface{}) {
 				panic("Unknown column type.")
 			}
 		}
-		qr.results[i] = record
+		qr.Results[i] = record
 	}
 }
 
@@ -260,12 +260,12 @@ func (qr *QueryResult) PrettyPrint() {
 
 	table := tablewriter.NewWriter(os.Stdout)
 	table.SetAutoFormatHeaders(false)
-	table.SetHeader(qr.header.column_names)
+	table.SetHeader(qr.Header.ColumnNames)
 
-	if len(qr.results) > 0 {
+	if len(qr.Results) > 0 {
 		// Convert to [][]string.
-		results := make([][]string, len(qr.results))
-		for i, record := range qr.results {
+		results := make([][]string, len(qr.Results))
+		for i, record := range qr.Results {
 			results[i] = make([]string, len(record))
 			for j, elem := range record {
 				results[i][j] = fmt.Sprint(elem)
@@ -277,7 +277,7 @@ func (qr *QueryResult) PrettyPrint() {
 	}
 	table.Render()
 
-	for k, v := range qr.statistics {
+	for k, v := range qr.Statistics {
 		fmt.Fprintf(os.Stdout, "\n%s %f", k, v)
 	}
 
@@ -285,7 +285,7 @@ func (qr *QueryResult) PrettyPrint() {
 }
 
 func (qr *QueryResult) getStat(stat string) int {
-	if val, ok := qr.statistics[stat]; ok {
+	if val, ok := qr.Statistics[stat]; ok {
 		return int(val)
 	} else {
 		return 0

@@ -197,9 +197,9 @@ func (g *Graph) CallProcedure(procedure string, yield []string, args ...interfac
 func (g *Graph) Labels() []string {
 	qr, _ := g.CallProcedure("db.labels", nil)
 
-	l := make([]string, len(qr.results))
+	l := make([]string, len(qr.Results))
 
-	for idx, r := range qr.results {
+	for idx, r := range qr.Results {
 		l[idx] = r[0].(string)
 	}
 	return l
@@ -209,9 +209,9 @@ func (g *Graph) Labels() []string {
 func (g *Graph) RelationshipTypes() []string {
 	qr, _ := g.CallProcedure("db.relationshipTypes", nil)
 
-	rt := make([]string, len(qr.results))
+	rt := make([]string, len(qr.Results))
 
-	for idx, r := range qr.results {
+	for idx, r := range qr.Results {
 		rt[idx] = r[0].(string)
 	}
 	return rt
@@ -221,9 +221,9 @@ func (g *Graph) RelationshipTypes() []string {
 func (g *Graph) PropertyKeys() []string {
 	qr, _ := g.CallProcedure("db.propertyKeys", nil)
 
-	p := make([]string, len(qr.results))
+	p := make([]string, len(qr.Results))
 
-	for idx, r := range qr.results {
+	for idx, r := range qr.Results {
 		p[idx] = r[0].(string)
 	}
 	return p

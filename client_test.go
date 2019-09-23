@@ -11,7 +11,7 @@ import (
 var graph Graph
 
 func createGraph() {
-	conn, _ := redis.Dial("tcp", "0.0.0.0:6379")
+	conn, _ := redis.Dial("tcp", os.Getenv("REDISGRAPH_URL"))
 	conn.Do("FLUSHALL")
 	graph = GraphNew("social", conn)
 
@@ -65,13 +65,13 @@ func TestMatchQuery(t *testing.T) {
 		t.Error(err)
 	}
 
-	assert.Equal(t, len(res.results), 1, "expecting 1 result record")
+	assert.Equal(t, len(res.Results), 1, "expecting 1 result record")
 
-	s, ok := (res.results[0][0]).(*Node)
+	s, ok := (res.Results[0][0]).(*Node)
 	assert.True(t, ok, "First column should contain nodes.")
-	e, ok := (res.results[0][1]).(*Edge)
+	e, ok := (res.Results[0][1]).(*Edge)
 	assert.True(t, ok, "Second column should contain edges.")
-	d, ok := (res.results[0][2]).(*Node)
+	d, ok := (res.Results[0][2]).(*Node)
 	assert.True(t, ok, "Third column should contain nodes.")
 
 	assert.Equal(t, s.Label, "Person", "Node should be of type 'Person'")
@@ -100,7 +100,7 @@ func TestCreateQuery(t *testing.T) {
 
 	assert.True(t, res.Empty(), "Expecting empty result-set")
 
-	// Validate statistics.
+	// Validate Statistics.
 	assert.Equal(t, res.NodesCreated(), 1, "Expecting a single node to be created.")
 	assert.Equal(t, res.PropertiesSet(), 1, "Expecting a songle property to be added.")
 
@@ -111,7 +111,7 @@ func TestCreateQuery(t *testing.T) {
 	}
 
 	assert.False(t, res.Empty(), "Expecting resultset to include a single node.")
-	w := (res.results[0][0]).(*Node)
+	w := (res.Results[0][0]).(*Node)
 	assert.Equal(t, w.Label, "WorkPlace", "Unexpected node label.")
 }
 
@@ -149,19 +149,19 @@ func TestArray(t *testing.T) {
 		t.Error(err)
 	}
 
-	assert.Equal(t, len(res.results), 1, "expecting 1 result record")
+	assert.Equal(t, len(res.Results), 1, "expecting 1 result record")
 
-	assert.Equal(t, []interface{}{0, 1, 2}, res.results[0][0])
+	assert.Equal(t, []interface{}{0, 1, 2}, res.Results[0][0])
 
 	q = "unwind([0,1,2]) as x return x"
 	res, err = graph.Query(q)
 	if err != nil {
 		t.Error(err)
 	}
-	assert.Equal(t, len(res.results), 3, "expecting 3 result record")
+	assert.Equal(t, len(res.Results), 3, "expecting 3 result record")
 
 	for i := 0; i < 3; i++ {
-		assert.Equal(t, i, res.results[i][0])
+		assert.Equal(t, i, res.Results[i][0])
 	}
 
 	q = "MATCH(n) return collect(n) as x"
@@ -181,9 +181,9 @@ func TestArray(t *testing.T) {
 	b.SetProperty("age", 30)
 	b.SetProperty("array", []interface{}{3, 4, 5})
 
-	assert.Equal(t, 1, len(res.results), "expecting 1 results record")
+	assert.Equal(t, 1, len(res.Results), "expecting 1 Results record")
 
-	arr := res.results[0][0].([]interface{})
+	arr := res.Results[0][0].([]interface{})
 
 	assert.Equal(t, 2, len(arr))
 
