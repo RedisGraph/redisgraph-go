@@ -1,6 +1,5 @@
 # For testing
-FROM golang:1.13
-MAINTAINER Chris Sandison <chris@thinkdataworks.com>
+FROM golang:1.12
 
 ENV GO111MODULE on
 ENV CGO_ENABLED 0
