@@ -1,6 +1,7 @@
 package redisgraph
 
 import (
+	"fmt"
 	"os"
 	"testing"
 
@@ -203,4 +204,109 @@ func TestArray(t *testing.T) {
 	assert.Equal(t, b.GetProperty("name"), resB.GetProperty("name"), "Unexpected property value.")
 	assert.Equal(t, b.GetProperty("age"), resB.GetProperty("age"), "Unexpected property value.")
 	assert.Equal(t, b.GetProperty("array"), resB.GetProperty("array"), "Unexpected property value.")
+}
+
+func TestLinkedLookup(t *testing.T) {
+
+	usertemplate := "CREATE (:user {uuid: '%s'})"
+
+	res, err := graph.Query(fmt.Sprintf(usertemplate, "1"))
+	assert.NoError(t, err)
+	_, err = graph.Query(fmt.Sprintf(usertemplate, "2"))
+	assert.NoError(t, err)
+	_, err = graph.Query(fmt.Sprintf(usertemplate, "3"))
+	assert.NoError(t, err)
+	org := "CREATE (:organization {uuid: '15'})"
+	_, err = graph.Query(org)
+	assert.NoError(t, err)
+
+	//res, err = graph.Query("MATCH (u:user) return u.uuid AS userids")
+	//assert.NoError(t, err)
+	//fmt.Println(fmt.Sprintf("%+v", res))
+
+	// Group to the org
+	group := "MATCH (o:organization {uuid: '15'}) CREATE (o)<-[:ispartof]-(:group {uuid: '4'})"
+	_, err = graph.Query(group)
+	assert.NoError(t, err)
+
+	//res, err = graph.Query("MATCH (g:group) return g.uuid AS groupIds")
+	//assert.NoError(t, err)
+	//fmt.Println(fmt.Sprintf("%+v", res))
+
+	//res, err = graph.Query("MATCH (o:organization)<-[i:ispartof]-(g:group) return o.uuid AS orgid, i AS parts, g.uuid AS groupId")
+	//assert.NoError(t, err)
+	//fmt.Println(fmt.Sprintf("%+v", res))
+
+	// Add org members
+	template := "MATCH (o:organization {uuid: '15'}), (u:user {uuid: '%s'}) CREATE (o)<-[:ismemberof]-(u)"
+	// Add all users to orgs
+	_, err = graph.Query(fmt.Sprintf(template, "1"))
+	assert.NoError(t, err)
+	_, err = graph.Query(fmt.Sprintf(template, "2"))
+	assert.NoError(t, err)
+	_, err = graph.Query(fmt.Sprintf(template, "3"))
+	assert.NoError(t, err)
+
+	//res, err = graph.Query("MATCH (o:organization)<-[m:ismemberof]-(u:user) RETURN o.uuid AS orgid, m AS membership, u.uuid AS userid")
+	//assert.NoError(t, err)
+	//fmt.Println(fmt.Sprintf("%+v", res))
+
+	// make user a member of the group
+	_, err = graph.Query("MATCH (g:group {uuid: '4'}), (u:user {uuid: '3'}) CREATE (g)<-[:ismemberof]-(u)")
+	assert.NoError(t, err)
+
+	//res, err = graph.Query("MATCH (g:group)<-[m:ismemberof]-(u:user) RETURN g.uuid AS groupid, m AS membership, u.uuid AS userid")
+	//assert.NoError(t, err)
+	//fmt.Println(fmt.Sprintf("%+v", res))
+
+	// Make some resources
+	resourcetemplate := "CREATE (:resource {uuid: '%s'})"
+	_, err = graph.Query(fmt.Sprintf(resourcetemplate, "aaa"))
+	assert.NoError(t, err)
+	_, err = graph.Query(fmt.Sprintf(resourcetemplate, "bbb"))
+	assert.NoError(t, err)
+	_, err = graph.Query(fmt.Sprintf(resourcetemplate, "ccc"))
+	assert.NoError(t, err)
+
+	//res, err = graph.Query("MATCH (r:resource) RETURN r.uuid as resourceid")
+	//assert.NoError(t, err)
+	//fmt.Println(fmt.Sprintf("%+v", res))
+
+	// Grant access to resources
+	// user access
+	res, err = graph.Query("MATCH (u:user {uuid: '1'}), (r:resource {uuid: 'aaa'}) CREATE (u)<-[:grantsaccessto {uuid: '1'}]-(r)")
+	assert.NoError(t, err)
+	// fmt.Println(fmt.Sprintf("%+v", res))
+	res, err = graph.Query("MATCH (u:user {uuid: '3'}), (r:resource {uuid: 'aaa'}) CREATE (u)<-[:grantsaccessto {uuid: '2'}]-(r)")
+	assert.NoError(t, err)
+	// fmt.Println(fmt.Sprintf("%+v", res))
+	res, err = graph.Query("MATCH (u:user {uuid: '1'}), (r:resource {uuid: 'ccc'}) CREATE (u)<-[:grantsaccessto {uuid: '3'}]-(r)")
+	assert.NoError(t, err)
+	// fmt.Println(fmt.Sprintf("%+v", res))
+	res, err = graph.Query("MATCH (u:user {uuid: '2'}), (r:resource {uuid: 'ccc'}) CREATE (u)<-[:grantsaccessto {uuid: '4'}]-(r)")
+	assert.NoError(t, err)
+	// fmt.Println(fmt.Sprintf("%+v", res))
+
+	// organization access
+	_, err = graph.Query("MATCH (o:organization {uuid: '15'}), (r:resource {uuid: 'bbb'}) CREATE (o)<-[:grantsaccessto {uuid: '5'}]-(r)")
+	assert.NoError(t, err)
+	_, err = graph.Query("MATCH (o:organization {uuid: '15'}), (r:resource {uuid: 'ccc'}) CREATE (o)<-[:grantsaccessto {uuid: '6'}]-(r)")
+	assert.NoError(t, err)
+
+	// group access
+	_, err = graph.Query("MATCH (g:group {uuid: '4'}), (r:resource {uuid: 'aaa'}) CREATE (g)<-[:grantsaccessto {uuid: '7'}]-(r)")
+	assert.NoError(t, err)
+
+	// Query all grants
+	// Query all users directly granted access to each resource
+	query := "MATCH (u:user)<-[gr:grantsaccessto]-(r:resource) RETURN u.uuid AS userid, gr.uuid AS grantid, r.uuid AS resourceid"
+	res, err = graph.Query(query)
+	fmt.Println(fmt.Sprintf("%+v", res))
+	assert.Equal(t, 4, len(res.Results))
+
+	// Query all grants through groups
+	query = "MATCH (r:resource)-[gr:grantsaccessto]->(g:group)<-[:ismemberof]-(u:user) RETURN u.uuid AS userid, gr.uuid AS grantid, g.uuid AS groupid, r.uuid AS resourceid"
+	res, err = graph.Query(query)
+	fmt.Println(fmt.Sprintf("%+v", res))
+	assert.Equal(t, 1, len(res.Results))
 }
