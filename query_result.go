@@ -50,10 +50,11 @@ type QueryResultHeader struct {
 
 // QueryResult represents the results of a query.
 type QueryResult struct {
-	results    [][]interface{}
-	statistics map[string]float64
-	header     QueryResultHeader
-	graph      *Graph
+	graph      			*Graph
+	header     			QueryResultHeader
+	results    			[]*Record
+	statistics 			map[string]float64
+	current_record_idx	int
 }
 
 func QueryResultNew(g *Graph, response interface{}) (*QueryResult, error) {
@@ -65,6 +66,7 @@ func QueryResultNew(g *Graph, response interface{}) (*QueryResult, error) {
 			column_types: make([]ResultSetColumnTypes, 0),
 		},
 		graph: g,
+		current_record_idx: -1,
 	}
 
 	r, _ := redis.Values(response, nil)
@@ -120,31 +122,30 @@ func (qr *QueryResult) parseHeader(raw_header interface{}) {
 
 func (qr *QueryResult) parseRecords(raw_result_set []interface{}) {
 	records, _ := redis.Values(raw_result_set[1], nil)
-
-	qr.results = make([][]interface{}, len(records))
+	qr.results = make([]*Record, len(records))
 
 	for i, r := range records {
 		cells, _ := redis.Values(r, nil)
-		record := make([]interface{}, len(cells))
+		values := make([]interface{}, len(cells))
 
 		for idx, c := range cells {
 			t := qr.header.column_types[idx]
 			switch t {
 			case COLUMN_SCALAR:
 				s, _ := redis.Values(c, nil)
-				record[idx] = qr.parseScalar(s)
+				values[idx] = qr.parseScalar(s)
 				break
 			case COLUMN_NODE:
-				record[idx] = qr.parseNode(c)
+				values[idx] = qr.parseNode(c)
 				break
 			case COLUMN_RELATION:
-				record[idx] = qr.parseEdge(c)
+				values[idx] = qr.parseEdge(c)
 				break
 			default:
 				panic("Unknown column type.")
 			}
 		}
-		qr.results[i] = record
+		qr.results[i] = recordNew(values, qr.header.column_names)
 	}
 }
 
@@ -252,6 +253,36 @@ func (qr *QueryResult) parseScalar(cell []interface{}) interface{} {
 	return s
 }
 
+func (qr *QueryResult) getStat(stat string) int {
+	if val, ok := qr.statistics[stat]; ok {
+		return int(val)
+	} else {
+		return 0
+	}
+}
+
+// Next returns true only if there is a record to be processed.
+func (qr *QueryResult) Next() bool {
+	if qr.Empty() {
+		return false
+	}
+	if qr.current_record_idx < len(qr.results)-1 {
+		qr.current_record_idx++
+		return true
+	} else {
+		return false
+	}
+}
+
+// Record returns the current record.
+func (qr *QueryResult) Record() *Record {
+	if qr.current_record_idx >= 0 && qr.current_record_idx < len(qr.results) {
+		return qr.results[qr.current_record_idx]
+	} else {
+		return nil
+	}
+}
+
 // PrettyPrint prints the QueryResult to stdout, pretty-like.
 func (qr *QueryResult) PrettyPrint() {
 	if qr.Empty() {
@@ -261,13 +292,14 @@ func (qr *QueryResult) PrettyPrint() {
 	table := tablewriter.NewWriter(os.Stdout)
 	table.SetAutoFormatHeaders(false)
 	table.SetHeader(qr.header.column_names)
-
+	row_count := len(qr.results)
+	col_count := len(qr.header.column_names)
 	if len(qr.results) > 0 {
 		// Convert to [][]string.
-		results := make([][]string, len(qr.results))
+		results := make([][]string, row_count)
 		for i, record := range qr.results {
-			results[i] = make([]string, len(record))
-			for j, elem := range record {
+			results[i] = make([]string, col_count)
+			for j, elem := range record.Values() {
 				results[i][j] = fmt.Sprint(elem)
 			}
 		}
@@ -282,14 +314,6 @@ func (qr *QueryResult) PrettyPrint() {
 	}
 
 	fmt.Fprintf(os.Stdout, "\n")
-}
-
-func (qr *QueryResult) getStat(stat string) int {
-	if val, ok := qr.statistics[stat]; ok {
-		return int(val)
-	} else {
-		return 0
-	}
 }
 
 func (qr *QueryResult) LabelsAdded() int {

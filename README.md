@@ -25,6 +25,7 @@ $ go get github.com/redislabs/redisgraph-go
 package main
 
 import (
+    "fmt"
     "github.com/gomodule/redigo/redis"
     rg "github.com/redislabs/redisgraph-go"
 )
@@ -64,10 +65,22 @@ func main() {
     graph.Commit()
 
     query := `MATCH (p:person)-[v:visited]->(c:country)
-           RETURN p.name, p.age, v.purpose, c.name`
+           RETURN p.name, p.age, c.name`
     rs, _ := graph.Query(query)
 
     rs.PrettyPrint()
+
+    // Access individual result record.
+    // As long as there are records to consume.
+    for rs.Next() {
+        // Get current record.
+        r := rs.Record()
+
+        p_name := r.GetByIndex(0).(string)
+        p_age := r.GetByIndex(1).(int)
+        c_name := r.GetByIndex(2).(string)
+        fmt.Printf("p_name: %s p_age: %d c_name: %s\n", p_name, p_age, c_name)
+    }
 }
 ```
 
@@ -75,11 +88,11 @@ Running the above should output:
 
 ```sh
 $ go run main.go
-+----------+-----------+-----------+--------+
-|  p.name  |   p.age   | v.purpose | c.name |
-+----------+-----------+-----------+--------+
-| John Doe | 33.000000 | NULL      | Japan  |
-+----------+-----------+-----------+--------+
++----------+-----------+--------+
+|  p.name  |   p.age   | c.name |
++----------+-----------+--------+
+| John Doe | 33.000000 | Japan  |
++----------+-----------+--------+
 ```
 
 ## Running tests

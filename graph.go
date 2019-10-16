@@ -200,7 +200,7 @@ func (g *Graph) Labels() []string {
 	l := make([]string, len(qr.results))
 
 	for idx, r := range qr.results {
-		l[idx] = r[0].(string)
+		l[idx] = r.GetByIndex(0).(string)
 	}
 	return l
 }
@@ -212,7 +212,7 @@ func (g *Graph) RelationshipTypes() []string {
 	rt := make([]string, len(qr.results))
 
 	for idx, r := range qr.results {
-		rt[idx] = r[0].(string)
+		rt[idx] = r.GetByIndex(0).(string)
 	}
 	return rt
 }
@@ -224,7 +224,7 @@ func (g *Graph) PropertyKeys() []string {
 	p := make([]string, len(qr.results))
 
 	for idx, r := range qr.results {
-		p[idx] = r[0].(string)
+		p[idx] = r.GetByIndex(0).(string)
 	}
 	return p
 }
