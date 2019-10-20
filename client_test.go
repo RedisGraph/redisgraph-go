@@ -67,11 +67,14 @@ func TestMatchQuery(t *testing.T) {
 
 	assert.Equal(t, len(res.results), 1, "expecting 1 result record")
 
-	s, ok := (res.results[0][0]).(*Node)
+	res.Next()
+	r := res.Record()
+
+	s, ok := r.GetByIndex(0).(*Node)
 	assert.True(t, ok, "First column should contain nodes.")
-	e, ok := (res.results[0][1]).(*Edge)
+	e, ok := r.GetByIndex(1).(*Edge)
 	assert.True(t, ok, "Second column should contain edges.")
-	d, ok := (res.results[0][2]).(*Node)
+	d, ok := r.GetByIndex(2).(*Node)
 	assert.True(t, ok, "Third column should contain nodes.")
 
 	assert.Equal(t, s.Label, "Person", "Node should be of type 'Person'")
@@ -111,7 +114,9 @@ func TestCreateQuery(t *testing.T) {
 	}
 
 	assert.False(t, res.Empty(), "Expecting resultset to include a single node.")
-	w := (res.results[0][0]).(*Node)
+	res.Next()
+	r := res.Record()
+	w := r.GetByIndex(0).(*Node)
 	assert.Equal(t, w.Label, "WorkPlace", "Unexpected node label.")
 }
 
@@ -149,9 +154,10 @@ func TestArray(t *testing.T) {
 		t.Error(err)
 	}
 
+	res.Next()
+	r := res.Record()
 	assert.Equal(t, len(res.results), 1, "expecting 1 result record")
-
-	assert.Equal(t, []interface{}{0, 1, 2}, res.results[0][0])
+	assert.Equal(t, []interface{}{0, 1, 2}, r.GetByIndex(0))
 
 	q = "unwind([0,1,2]) as x return x"
 	res, err = graph.Query(q)
@@ -160,8 +166,11 @@ func TestArray(t *testing.T) {
 	}
 	assert.Equal(t, len(res.results), 3, "expecting 3 result record")
 
-	for i := 0; i < 3; i++ {
-		assert.Equal(t, i, res.results[i][0])
+	i := 0
+	for res.Next() {
+		r = res.Record()
+		assert.Equal(t, i, r.GetByIndex(0))
+		i++
 	}
 
 	q = "MATCH(n) return collect(n) as x"
@@ -183,7 +192,9 @@ func TestArray(t *testing.T) {
 
 	assert.Equal(t, 1, len(res.results), "expecting 1 results record")
 
-	arr := res.results[0][0].([]interface{})
+	res.Next()
+	r = res.Record()
+	arr := r.GetByIndex(0).([]interface{})
 
 	assert.Equal(t, 2, len(arr))
 
