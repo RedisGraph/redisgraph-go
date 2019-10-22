@@ -21,6 +21,8 @@ $ go get github.com/redislabs/redisgraph-go
 
 ## Usage
 
+The complete `redisgraph-go` API is documented on [GoDoc](https://godoc.org/github.com/RedisGraph/redisgraph-go).
+
 ```go
 package main
 
@@ -66,33 +68,41 @@ func main() {
 
     query := `MATCH (p:person)-[v:visited]->(c:country)
            RETURN p.name, p.age, c.name`
-    rs, _ := graph.Query(query)
 
-    rs.PrettyPrint()
+    // result is a QueryResult struct containing the query's generated records and statistics.
+    result, _ := graph.Query(query)
 
-    // Access individual result record.
-    // As long as there are records to consume.
-    for rs.Next() {
-        // Get current record.
-        r := rs.Record()
+    // Pretty-print the full result set as a table.
+    result.PrettyPrint()
 
-        p_name := r.GetByIndex(0).(string)
-        p_age := r.GetByIndex(1).(int)
-        c_name := r.GetByIndex(2).(string)
-        fmt.Printf("p_name: %s p_age: %d c_name: %s\n", p_name, p_age, c_name)
+    // Iterate over each individual Record in the result.
+    for result.Next() { // Next returns true until the iterator is depleted.
+        // Get the current Record.
+        r := result.Record()
+
+        // Entries in the Record can be accessed by index or key.
+        p_name := r.GetByIndex(0)
+        fmt.Printf("\nName: %s\n", p_name)
+        p_age, _ := r.Get("p.age")
+        fmt.Printf("\nAge: %d\n", p_age)
     }
 }
 ```
 
-Running the above should output:
+Running the above produces the output:
 
 ```sh
-$ go run main.go
-+----------+-----------+--------+
-|  p.name  |   p.age   | c.name |
-+----------+-----------+--------+
-| John Doe | 33.000000 | Japan  |
-+----------+-----------+--------+
++----------+-------+--------+
+|  p.name  | p.age | c.name |
++----------+-------+--------+
+| John Doe |    33 | Japan  |
++----------+-------+--------+
+
+Query internal execution time 1.623063
+
+Name: John Doe
+
+Age: 33
 ```
 
 ## Running tests
