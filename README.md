@@ -86,6 +86,14 @@ func main() {
         p_age, _ := r.Get("p.age")
         fmt.Printf("\nAge: %d\n", p_age)
     }
+
+    // Path matching example.
+    query = "MATCH p = (:Person)-[:Visited]->(:Country) RETURN p"
+    result, _ = graph.Query(query)
+    res.Next()
+    r := res.Record()
+    p, ok := r.GetByIndex(0).(Path)
+    fmt.Printf("%v", p.Encode())
 }
 ```
 
