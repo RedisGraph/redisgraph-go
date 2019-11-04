@@ -41,6 +41,7 @@ const (
 	VALUE_ARRAY
 	VALUE_EDGE
 	VALUE_NODE
+	VALUE_PATH
 )
 
 type QueryResultHeader struct {
@@ -217,6 +218,13 @@ func (qr *QueryResult) parseArray(cell interface{}) []interface{} {
 	return array
 }
 
+func (qr *QueryResult) parsePath(cell interface{}) Path {
+	arrays := cell.([]interface{})
+	nodes := qr.parseScalar(arrays[0].([]interface{}))
+	edges := qr.parseScalar(arrays[1].([]interface{}))
+	return PathNew(nodes.([]interface{}), edges.([]interface{}))
+}
+
 func (qr *QueryResult) parseScalar(cell []interface{}) interface{} {
 	t, _ := redis.Int(cell[0], nil)
 	v := cell[1]
@@ -245,6 +253,9 @@ func (qr *QueryResult) parseScalar(cell []interface{}) interface{} {
 
 	case VALUE_NODE:
 		s = qr.parseNode(v)
+
+	case VALUE_PATH:
+		s = qr.parsePath(v)
 
 	case VALUE_UNKNOWN:
 		panic("Unknown scalar type\n")

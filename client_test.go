@@ -215,3 +215,44 @@ func TestArray(t *testing.T) {
 	assert.Equal(t, b.GetProperty("age"), resB.GetProperty("age"), "Unexpected property value.")
 	assert.Equal(t, b.GetProperty("array"), resB.GetProperty("array"), "Unexpected property value.")
 }
+
+func TestPath(t *testing.T) {
+	createGraph()
+	q := "MATCH p = (:Person)-[:Visited]->(:Country) RETURN p"
+	res, err := graph.Query(q)
+	if err != nil {
+		t.Error(err)
+	}
+
+	assert.Equal(t, len(res.results), 1, "expecting 1 result record")
+
+	res.Next()
+	r := res.Record()
+	
+	p, ok := r.GetByIndex(0).(Path)
+	assert.True(t, ok, "First column should contain path.")
+
+	assert.Equal(t, 2, p.NodesCount(), "Path should contain two nodes")
+	assert.Equal(t, 1, p.EdgeCount(), "Path should contain one edge")
+
+	s := p.FirstNode()
+	e := p.GetEdge(0)
+	d := p.LastNode()
+
+	assert.Equal(t, s.Label, "Person", "Node should be of type 'Person'")
+	assert.Equal(t, e.Relation, "Visited", "Edge should be of relation type 'Visited'")
+	assert.Equal(t, d.Label, "Country", "Node should be of type 'Country'")
+
+	assert.Equal(t, len(s.Properties), 4, "Person node should have 4 properties")
+
+	assert.Equal(t, s.GetProperty("name"), "John Doe", "Unexpected property value.")
+	assert.Equal(t, s.GetProperty("age"), 33, "Unexpected property value.")
+	assert.Equal(t, s.GetProperty("gender"), "male", "Unexpected property value.")
+	assert.Equal(t, s.GetProperty("status"), "single", "Unexpected property value.")
+
+	assert.Equal(t, e.GetProperty("year"), 2017, "Unexpected property value.")
+
+	assert.Equal(t, d.GetProperty("name"), "Japan", "Unexpected property value.")
+	assert.Equal(t, d.GetProperty("population"), 126800000, "Unexpected property value.")
+
+}
