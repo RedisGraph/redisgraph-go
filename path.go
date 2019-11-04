@@ -6,31 +6,40 @@ import (
 )
 
 type Path struct {
-	Nodes []interface{}
-	Edges []interface{}
+	Nodes []*Node
+	Edges []*Edge
 }
 
 func PathNew(nodes []interface{}, edges []interface{}) Path {
-	return Path{
-		Nodes: nodes,
-		Edges: edges,
+	Nodes := make([]*Node, len(nodes))
+	for i := 0; i < len(nodes); i++ {
+		Nodes[i] = nodes[i].(*Node)
+	}
+	Edges := make([]*Edge, len(edges))
+	for i := 0; i < len(edges); i++ {
+		Edges[i] = edges[i].(*Edge)
+	}
+	
+	return Path{	
+		Edges : Edges,
+		Nodes : Nodes,
 	}
 }
 
-func (p Path) GetNodes() []interface{} {
+func (p Path) GetNodes() []*Node {
 	return p.Nodes
 }
 
-func (p Path) GetEdges() []interface{} {
+func (p Path) GetEdges() []*Edge {
 	return p.Edges
 }
 
 func (p Path) GetNode(index int) *Node {
-	return p.Nodes[index].(*Node)
+	return p.Nodes[index]
 }
 
 func (p Path) GetEdge(index int) *Edge{
-	return p.Edges[index].(*Edge);
+	return p.Edges[index]
 }
 
 func (p Path) FirstNode() *Node {
@@ -49,7 +58,7 @@ func (p Path) EdgeCount() int {
 	return len(p.Edges)
 }
 
-func (p Path) Encode() string {
+func (p Path) String() string {
 	s := []string{"<"}
 	edgeCount := p.EdgeCount()
 	for i := 0; i < edgeCount; i++ {

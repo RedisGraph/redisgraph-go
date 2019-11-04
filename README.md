@@ -93,7 +93,7 @@ func main() {
     res.Next()
     r := res.Record()
     p, ok := r.GetByIndex(0).(Path)
-    fmt.Printf("%v", p.Encode())
+    fmt.Printf("%s", p)
 }
 ```
 
