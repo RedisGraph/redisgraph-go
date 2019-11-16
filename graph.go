@@ -99,12 +99,20 @@ func (g *Graph) Commit() (*QueryResult, error) {
 
 // Query executes a query against the graph.
 func (g *Graph) Query(q string) (*QueryResult, error) {
+	
 	r, err := g.Conn.Do("GRAPH.QUERY", g.Id, q, "--compact")
 	if err != nil {
 		return nil, err
 	}
 
 	return QueryResultNew(g, r)
+}
+
+func (g *Graph) ParameterizedQuery(q string, params map[string]interface{}) (*QueryResult, error) {
+	if(params != nil){
+		q = BuildParamsHeader(params) + q
+	}
+	return g.Query(q);
 }
 
 // Merge pattern
