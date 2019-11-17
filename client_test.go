@@ -256,3 +256,19 @@ func TestPath(t *testing.T) {
 	assert.Equal(t, d.GetProperty("population"), 126800000, "Unexpected property value.")
 
 }
+
+func TestParameterizedQuery(t *testing.T) {
+	createGraph()
+	params := []interface{}{1, 2.3, "str", true, false, nil, []interface {}{0, 1, 2}}
+	q := "RETURN $param"
+	params_map := make(map[string]interface{})
+	for index, param := range params {
+		params_map["param"] = param
+		res, err := graph.ParameterizedQuery(q, params_map);
+		if err != nil {
+			t.Error(err)
+		}
+		res.Next()
+		assert.Equal(t, res.Record().GetByIndex(0), params[index], "Unexpected parameter value")
+	}
+}

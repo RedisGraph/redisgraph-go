@@ -20,6 +20,9 @@ func arrayToString(arr interface{}) interface{} {
 }
 
 func ToString(i interface{}) interface{} {
+	if(i == nil) {
+		return "null"
+	}
 	v := reflect.ValueOf(i)
 	switch reflect.TypeOf(i).Kind() {
 	case reflect.String:
@@ -66,4 +69,12 @@ func RandomString(n int) string {
 		output[pos] = letterBytes[randomPos]
 	}
 	return string(output)
+}
+
+func BuildParamsHeader(params map[string]interface{}) (string) {
+	header := "CYPHER "
+	for key, value := range params {
+		header += fmt.Sprintf("%s=%v ", key, ToString(value))
+	}
+	return header
 }
