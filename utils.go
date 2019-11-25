@@ -3,46 +3,41 @@ package redisgraph
 import (
 	"crypto/rand"
 	"fmt"
-	"reflect"
 	"strings"
+	"strconv"
 )
 
 // go array to string is [1 2 3] for [1, 2, 3] array
 // cypher expects comma separated array
-func arrayToString(arr interface{}) interface{} {
-	v := reflect.ValueOf(arr)
-	var arrayLength = v.Len()
+func arrayToString(arr []interface{}) string {
+	var arrayLength = len(arr)
 	strArray := []string{}
 	for i := 0; i < arrayLength; i++ {
-		strArray = append(strArray, fmt.Sprintf("%v", ToString(v.Index(i))))
+		strArray = append(strArray, ToString(arr[i]))
 	}
-	return "[" + strings.Join(strArray[:], ",") + "]"
+	return "[" + strings.Join(strArray, ",") + "]"
 }
 
-func ToString(i interface{}) interface{} {
+func ToString(i interface{}) string {
 	if(i == nil) {
 		return "null"
 	}
-	v := reflect.ValueOf(i)
-	switch reflect.TypeOf(i).Kind() {
-	case reflect.String:
-		s := v.String()
-		if len(s) == 0 {
-			return "\"\""
-		}
-		if s[0] != '"' {
-			s = "\"" + s
-		}
-		if s[len(s)-1] != '"' {
-			s += "\""
-		}
-		return s
-	case reflect.Slice:
-		return arrayToString(i)
-	case reflect.Array:
-		return arrayToString(i)
+
+	switch i.(type) {
+	case string:
+		s := i.(string)
+		return strconv.Quote(s)
+	case int:
+		return strconv.Itoa(i.(int))
+	case float64:
+		return strconv.FormatFloat(i.(float64), 'f', -1, 64)
+	case bool:
+		return strconv.FormatBool(i.(bool))
+	case []interface {}:
+		arr := i.([]interface{})
+		return arrayToString(arr)
 	default:
-		return i
+		panic("Unrecognized type to convert to string")
 	}
 }
 

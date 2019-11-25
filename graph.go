@@ -190,7 +190,7 @@ func (g *Graph) CallProcedure(procedure string, yield []string, args ...interfac
 
 	tmp := make([]string, 0, len(args))
 	for arg := range args {
-		tmp = append(tmp, ToString(arg).(string))
+		tmp = append(tmp, ToString(arg))
 	}
 	q += fmt.Sprintf("%s)", strings.Join(tmp, ","))
 

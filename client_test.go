@@ -259,7 +259,7 @@ func TestPath(t *testing.T) {
 
 func TestParameterizedQuery(t *testing.T) {
 	createGraph()
-	params := []interface{}{1, 2.3, "str", true, false, nil, []interface {}{0, 1, 2}}
+	params := []interface{}{1, 2.3, "str", true, false, nil, []interface {}{0, 1, 2}, []interface {}{"0", "1", "2"}}
 	q := "RETURN $param"
 	params_map := make(map[string]interface{})
 	for index, param := range params {
