@@ -3,18 +3,17 @@ package redisgraph
 import (
 	"crypto/rand"
 	"fmt"
-	"reflect"
 	"strings"
 )
 
 // go array to string is [1 2 3] for [1, 2, 3] array
 // cypher expects comma separated array
 func arrayToString(arr interface{}) interface{} {
-	v := reflect.ValueOf(arr)
-	var arrayLength = v.Len()
+	v := arr.([]interface{})
+	var arrayLength = len(v)
 	strArray := []string{}
 	for i := 0; i < arrayLength; i++ {
-		strArray = append(strArray, fmt.Sprintf("%v", ToString(v.Index(i))))
+		strArray = append(strArray, fmt.Sprintf("%v", ToString(v[i])))
 	}
 	return "[" + strings.Join(strArray[:], ",") + "]"
 }
@@ -23,10 +22,10 @@ func ToString(i interface{}) interface{} {
 	if(i == nil) {
 		return "null"
 	}
-	v := reflect.ValueOf(i)
-	switch reflect.TypeOf(i).Kind() {
-	case reflect.String:
-		s := v.String()
+
+	switch i.(type) {
+	case string:
+		s := i.(string)
 		if len(s) == 0 {
 			return "\"\""
 		}
@@ -37,9 +36,7 @@ func ToString(i interface{}) interface{} {
 			s += "\""
 		}
 		return s
-	case reflect.Slice:
-		return arrayToString(i)
-	case reflect.Array:
+	case []interface {} :
 		return arrayToString(i)
 	default:
 		return i
