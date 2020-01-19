@@ -290,7 +290,7 @@ func TestCreateIndex(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	assert.Equal(t, 0, res.IndicesCreated(), "Expecting 1 index deleted")
+	assert.Equal(t, 1, res.IndicesDeleted(), "Expecting 1 index deleted")
 
 	_, err = graph.Query("DROP INDEX ON :user(name)")
 	assert.Equal(t, err.Error(), "ERR Unable to drop index on :user(name): no such index.")

@@ -18,7 +18,7 @@ const (
 	PROPERTIES_SET          string = "Properties set"
 	RELATIONSHIPS_CREATED   string = "Relationships created"
 	INDICES_CREATED string = "Indices created"
-    INDICES_DELETED string = "Indices deleted"
+	INDICES_DELETED string = "Indices deleted"
 	INTERNAL_EXECUTION_TIME string = "internal execution time"
 )
 
