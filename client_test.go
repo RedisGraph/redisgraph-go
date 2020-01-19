@@ -272,3 +272,26 @@ func TestParameterizedQuery(t *testing.T) {
 		assert.Equal(t, res.Record().GetByIndex(0), params[index], "Unexpected parameter value")
 	}
 }
+
+func TestCreateIndex(t *testing.T) {
+	res, err := graph.Query("CREATE INDEX ON :user(name)")
+	if err != nil {
+		t.Error(err)
+	}
+	assert.Equal(t, 1, res.IndicesCreated(), "Expecting 1 index created")
+
+	res, err = graph.Query("CREATE INDEX ON :user(name)")
+	if err != nil {
+		t.Error(err)
+	}
+	assert.Equal(t, 0, res.IndicesCreated(), "Expecting 0 index created")
+
+	res, err = graph.Query("DROP INDEX ON :user(name)")
+	if err != nil {
+		t.Error(err)
+	}
+	assert.Equal(t, 0, res.IndicesCreated(), "Expecting 1 index deleted")
+
+	_, err = graph.Query("DROP INDEX ON :user(name)")
+	assert.Equal(t, err.Error(), "ERR Unable to drop index on :user(name): no such index.")
+}
