@@ -17,6 +17,8 @@ const (
 	RELATIONSHIPS_DELETED   string = "Relationships deleted"
 	PROPERTIES_SET          string = "Properties set"
 	RELATIONSHIPS_CREATED   string = "Relationships created"
+	INDICES_CREATED string = "Indices created"
+	INDICES_DELETED string = "Indices deleted"
 	INTERNAL_EXECUTION_TIME string = "internal execution time"
 )
 
@@ -349,6 +351,14 @@ func (qr *QueryResult) RelationshipsCreated() int {
 
 func (qr *QueryResult) RelationshipsDeleted() int {
 	return qr.getStat(RELATIONSHIPS_DELETED)
+}
+
+func (qr *QueryResult) IndicesCreated() int {
+	return qr.getStat(INDICES_CREATED)
+}
+
+func (qr *QueryResult) IndicesDeleted() int {
+	return qr.getStat(INDICES_DELETED)
 }
 
 func (qr *QueryResult) RunTime() int {
