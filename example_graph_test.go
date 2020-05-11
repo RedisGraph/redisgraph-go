@@ -28,9 +28,8 @@ func ExampleGraphNew() {
 
 func ExampleGraphNew_pool() {
 	host := "localhost:6379"
-	password := ""
 	pool := &redis.Pool{Dial: func() (redis.Conn, error) {
-		return redis.Dial("tcp", host, redis.DialPassword(password))
+		return redis.Dial("tcp", host)
 	}}
 
 	graph := redisgraph.GraphNew("social", pool.Get())
