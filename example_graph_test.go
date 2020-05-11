@@ -16,11 +16,8 @@ func ExampleGraphNew() {
 
 	graph := redisgraph.GraphNew("social", conn)
 
-	q := "CREATE (w:WorkPlace {name:'RedisLabs'})"
+	q := "CREATE (w:WorkPlace {name:'RedisLabs'}) RETURN w"
 	res, _ := graph.Query(q)
-
-	q = "MATCH (w:WorkPlace) RETURN w"
-	res, _ = graph.Query(q)
 
 	res.Next()
 	r := res.Record()
@@ -38,11 +35,8 @@ func ExampleGraphNew_pool() {
 
 	graph := redisgraph.GraphNew("social", pool.Get())
 
-	q := "CREATE (w:WorkPlace {name:'RedisLabs'})"
+	q := "CREATE (w:WorkPlace {name:'RedisLabs'}) RETURN w"
 	res, _ := graph.Query(q)
-
-	q = "MATCH (w:WorkPlace) RETURN w"
-	res, _ = graph.Query(q)
 
 	res.Next()
 	r := res.Record()
@@ -104,13 +98,9 @@ func ExampleGraphNew_tls() {
 
 	graph := redisgraph.GraphNew("social", pool.Get())
 
-	q := "CREATE (w:WorkPlace {name:'RedisLabs'})"
-	res, err := graph.Query(q)
+	q := "CREATE (w:WorkPlace {name:'RedisLabs'}) RETURN w"
+	res, _ := graph.Query(q)
 
-	q = "MATCH (w:WorkPlace) RETURN w"
-	res, err = graph.Query(q)
-
-	res.Next()
 	r := res.Record()
 	w := r.GetByIndex(0).(*redisgraph.Node)
 	fmt.Println(w.Label)
@@ -119,11 +109,11 @@ func ExampleGraphNew_tls() {
 func getConnectionDetails() (host string, password string) {
 	value, exists := os.LookupEnv("REDISGRAPH_TEST_HOST")
 	host = "localhost:6379"
-	password = ""
-	valuePassword, existsPassword := os.LookupEnv("REDISGRAPH_TEST_PASSWORD")
 	if exists && value != "" {
 		host = value
 	}
+	password = ""
+	valuePassword, existsPassword := os.LookupEnv("REDISGRAPH_TEST_PASSWORD")
 	if existsPassword && valuePassword != "" {
 		password = valuePassword
 	}
