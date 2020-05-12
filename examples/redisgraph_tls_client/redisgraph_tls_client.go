@@ -79,11 +79,8 @@ func main() {
 
 	graph := redisgraph.GraphNew("social", pool.Get())
 
-	q := "CREATE (w:WorkPlace {name:'RedisLabs'})"
-	res, err := graph.Query(q)
-
-	q = "MATCH (w:WorkPlace) RETURN w"
-	res, err = graph.Query(q)
+	q := "CREATE (w:WorkPlace {name:'RedisLabs'}) RETURN w"
+	res, _ := graph.Query(q)
 
 	res.Next()
 	r := res.Record()

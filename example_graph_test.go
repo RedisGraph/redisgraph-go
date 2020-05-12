@@ -100,6 +100,7 @@ func ExampleGraphNew_tls() {
 	q := "CREATE (w:WorkPlace {name:'RedisLabs'}) RETURN w"
 	res, _ := graph.Query(q)
 
+	res.Next()
 	r := res.Record()
 	w := r.GetByIndex(0).(*redisgraph.Node)
 	fmt.Println(w.Label)
