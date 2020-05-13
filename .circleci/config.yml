@@ -25,8 +25,7 @@ jobs:
     working_directory: /go/src/github.com/RedisGraph/redisgraph-go
     steps:
       - checkout
-      - run: go get -v -t -d ./...
-      - run: go test -v ./... -race -coverprofile=coverage.txt -covermode=atomic
+      - run: make test
       - early_return_for_forked_pull_requests
       - run: bash <(curl -s https://codecov.io/bash) -t ${CODECOV_TOKEN}
       
