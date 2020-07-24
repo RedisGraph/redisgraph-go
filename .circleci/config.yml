@@ -18,7 +18,7 @@ commands:
 jobs:
   build:
     docker:
-      - image: circleci/golang:1.9
+      - image: circleci/golang:1.12
       
       - image: redislabs/redisgraph:edge
 
