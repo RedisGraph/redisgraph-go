@@ -20,6 +20,7 @@ const (
 	INDICES_CREATED string = "Indices created"
 	INDICES_DELETED string = "Indices deleted"
 	INTERNAL_EXECUTION_TIME string = "internal execution time"
+	CACHED_EXECUTION string = "Cached execution"
 )
 
 type ResultSetColumnTypes int
@@ -364,3 +365,8 @@ func (qr *QueryResult) IndicesDeleted() int {
 func (qr *QueryResult) RunTime() int {
 	return qr.getStat(INTERNAL_EXECUTION_TIME)
 }
+
+func (qr *QueryResult) CachedExecution() int {
+	return qr.getStat(CACHED_EXECUTION)
+}
+
