@@ -19,7 +19,7 @@ const (
 	RELATIONSHIPS_CREATED   string = "Relationships created"
 	INDICES_CREATED string = "Indices created"
 	INDICES_DELETED string = "Indices deleted"
-	INTERNAL_EXECUTION_TIME string = "internal execution time"
+	INTERNAL_EXECUTION_TIME string = "Query internal execution time"
 	CACHED_EXECUTION string = "Cached execution"
 )
 
@@ -267,11 +267,20 @@ func (qr *QueryResult) parseScalar(cell []interface{}) interface{} {
 	return s
 }
 
-func (qr *QueryResult) getStat(stat string) int {
+func (qr *QueryResult) getStatAsInt(stat string) int {
 	if val, ok := qr.statistics[stat]; ok {
 		return int(val)
 	} else {
 		return 0
+	}
+}
+
+func (qr *QueryResult) getStatAsFloat(stat string) float64 {
+	if val, ok := qr.statistics[stat]; ok {
+		return val
+	} else {
+		fmt.Fprintf(os.Stdout, "problem")
+		return 0.0
 	}
 }
 
@@ -300,6 +309,7 @@ func (qr *QueryResult) Record() *Record {
 // PrettyPrint prints the QueryResult to stdout, pretty-like.
 func (qr *QueryResult) PrettyPrint() {
 	if qr.Empty() {
+		fmt.Fprintf(os.Stdout, "Empty result\n")
 		return
 	}
 
@@ -331,42 +341,42 @@ func (qr *QueryResult) PrettyPrint() {
 }
 
 func (qr *QueryResult) LabelsAdded() int {
-	return qr.getStat(LABELS_ADDED)
+	return qr.getStatAsInt(LABELS_ADDED)
 }
 
 func (qr *QueryResult) NodesCreated() int {
-	return qr.getStat(NODES_CREATED)
+	return qr.getStatAsInt(NODES_CREATED)
 }
 
 func (qr *QueryResult) NodesDeleted() int {
-	return qr.getStat(NODES_DELETED)
+	return qr.getStatAsInt(NODES_DELETED)
 }
 
 func (qr *QueryResult) PropertiesSet() int {
-	return qr.getStat(PROPERTIES_SET)
+	return qr.getStatAsInt(PROPERTIES_SET)
 }
 
 func (qr *QueryResult) RelationshipsCreated() int {
-	return qr.getStat(RELATIONSHIPS_CREATED)
+	return qr.getStatAsInt(RELATIONSHIPS_CREATED)
 }
 
 func (qr *QueryResult) RelationshipsDeleted() int {
-	return qr.getStat(RELATIONSHIPS_DELETED)
+	return qr.getStatAsInt(RELATIONSHIPS_DELETED)
 }
 
 func (qr *QueryResult) IndicesCreated() int {
-	return qr.getStat(INDICES_CREATED)
+	return qr.getStatAsInt(INDICES_CREATED)
 }
 
 func (qr *QueryResult) IndicesDeleted() int {
-	return qr.getStat(INDICES_DELETED)
+	return qr.getStatAsInt(INDICES_DELETED)
 }
 
-func (qr *QueryResult) RunTime() int {
-	return qr.getStat(INTERNAL_EXECUTION_TIME)
+func (qr *QueryResult) RunTime() float64 {
+	return qr.getStatAsFloat(INTERNAL_EXECUTION_TIME)
 }
 
 func (qr *QueryResult) CachedExecution() int {
-	return qr.getStat(CACHED_EXECUTION)
+	return qr.getStatAsInt(CACHED_EXECUTION)
 }
 
