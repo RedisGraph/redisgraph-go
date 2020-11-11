@@ -5,7 +5,6 @@ import (
 	"os"
 	"strconv"
 	"strings"
-
 	"github.com/gomodule/redigo/redis"
 	"github.com/olekukonko/tablewriter"
 )
@@ -19,7 +18,7 @@ const (
 	RELATIONSHIPS_CREATED   string = "Relationships created"
 	INDICES_CREATED string = "Indices created"
 	INDICES_DELETED string = "Indices deleted"
-	INTERNAL_EXECUTION_TIME string = "internal execution time"
+	INTERNAL_EXECUTION_TIME string = "Query internal execution time"
 	CACHED_EXECUTION string = "Cached execution"
 )
 
@@ -267,11 +266,11 @@ func (qr *QueryResult) parseScalar(cell []interface{}) interface{} {
 	return s
 }
 
-func (qr *QueryResult) getStat(stat string) int {
+func (qr *QueryResult) getStat(stat string) float64 {
 	if val, ok := qr.statistics[stat]; ok {
-		return int(val)
+		return val
 	} else {
-		return 0
+		return 0.0
 	}
 }
 
@@ -331,42 +330,42 @@ func (qr *QueryResult) PrettyPrint() {
 }
 
 func (qr *QueryResult) LabelsAdded() int {
-	return qr.getStat(LABELS_ADDED)
+	return int(qr.getStat(LABELS_ADDED))
 }
 
 func (qr *QueryResult) NodesCreated() int {
-	return qr.getStat(NODES_CREATED)
+	return int(qr.getStat(NODES_CREATED))
 }
 
 func (qr *QueryResult) NodesDeleted() int {
-	return qr.getStat(NODES_DELETED)
+	return int(qr.getStat(NODES_DELETED))
 }
 
 func (qr *QueryResult) PropertiesSet() int {
-	return qr.getStat(PROPERTIES_SET)
+	return int(qr.getStat(PROPERTIES_SET))
 }
 
 func (qr *QueryResult) RelationshipsCreated() int {
-	return qr.getStat(RELATIONSHIPS_CREATED)
+	return int(qr.getStat(RELATIONSHIPS_CREATED))
 }
 
 func (qr *QueryResult) RelationshipsDeleted() int {
-	return qr.getStat(RELATIONSHIPS_DELETED)
+	return int(qr.getStat(RELATIONSHIPS_DELETED))
 }
 
 func (qr *QueryResult) IndicesCreated() int {
-	return qr.getStat(INDICES_CREATED)
+	return int(qr.getStat(INDICES_CREATED))
 }
 
 func (qr *QueryResult) IndicesDeleted() int {
-	return qr.getStat(INDICES_DELETED)
+	return int(qr.getStat(INDICES_DELETED))
 }
 
-func (qr *QueryResult) RunTime() int {
+func (qr *QueryResult) RunTime() float64 {
 	return qr.getStat(INTERNAL_EXECUTION_TIME)
 }
 
 func (qr *QueryResult) CachedExecution() int {
-	return qr.getStat(CACHED_EXECUTION)
+	return int(qr.getStat(CACHED_EXECUTION))
 }
 
