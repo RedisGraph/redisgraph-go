@@ -216,6 +216,34 @@ func TestArray(t *testing.T) {
 	assert.Equal(t, b.GetProperty("array"), resB.GetProperty("array"), "Unexpected property value.")
 }
 
+func TestMap(t *testing.T) {
+	createGraph()
+
+	q := "RETURN {val_1: 5, val_2: 'str'}"
+	res, err := graph.Query(q)
+	if err != nil {
+		t.Error(err)
+	}
+	res.Next()
+	r := res.Record()
+	mapval := r.GetByIndex(0).(map[string]interface{})
+
+	expected := map[string]interface{}{"val_1": 5, "val_2": "str"}
+	assert.Equal(t, mapval, expected, "expecting a map literal")
+
+	q = "MATCH (a:Country) RETURN a { .name }"
+	res, err = graph.Query(q)
+	if err != nil {
+		t.Error(err)
+	}
+	res.Next()
+	r = res.Record()
+	mapval = r.GetByIndex(0).(map[string]interface{})
+
+	expected = map[string]interface{}{"name": "Japan"}
+	assert.Equal(t, mapval, expected, "expecting a map projection")
+}
+
 func TestPath(t *testing.T) {
 	createGraph()
 	q := "MATCH p = (:Person)-[:Visited]->(:Country) RETURN p"
