@@ -295,3 +295,62 @@ func TestCreateIndex(t *testing.T) {
 	_, err = graph.Query("DROP INDEX ON :user(name)")
 	assert.Equal(t, err.Error(), "ERR Unable to drop index on :user(name): no such index.")
 }
+
+func TestQueryStatistics(t *testing.T) {
+	graph.Flush()
+	err := graph.Delete()
+	assert.Nil(t,err)
+
+	q := "CREATE (:Person{name:'a',age:32,array:[0,1,2]})"
+	res, err := graph.Query(q)
+	assert.Nil(t,err)
+
+	assert.Equal(t, 1, res.NodesCreated(), "Expecting 1 node created")
+	assert.Equal(t, 0, res.NodesDeleted(), "Expecting 0 nodes deleted")
+	assert.Greater(t, res.InternalExecutionTime(),0.0, "Expecting internal execution time not to be 0.0")
+	assert.Equal(t, true, res.Empty(), "Expecting empty resultset")
+
+	res,err = graph.Query("MATCH (n) DELETE n")
+	assert.Nil(t,err)
+	assert.Equal(t, 1, res.NodesDeleted(), "Expecting 1 nodes deleted")
+
+	// Create 2 nodes connect via a single edge.
+	japan := NodeNew("Country", "j", nil)
+	john := NodeNew("Person", "p", nil)
+	edge := EdgeNew("Visited", john, japan, nil)
+
+	// Set node properties.
+	john.SetProperty("name", "John Doe")
+	john.SetProperty("age", 33)
+	john.SetProperty("gender", "male")
+	john.SetProperty("status", "single")
+
+	japan.SetProperty("name", "Japan")
+	japan.SetProperty("population", 126800000)
+
+	edge.SetProperty("year", 2017)
+
+	// Introduce entities to graph.
+	graph.AddNode(john)
+	graph.AddNode(japan)
+	graph.AddEdge(edge)
+
+	// Flush graph to DB.
+	res, err = graph.Commit()
+	assert.Nil(t,err)
+	assert.Equal(t, 2, res.NodesCreated(), "Expecting 2 node created")
+	assert.Equal(t, 0, res.NodesDeleted(), "Expecting 0 nodes deleted")
+	assert.Equal(t, 7, res.PropertiesSet(), "Expecting 7 properties set")
+	assert.Equal(t, 1, res.RelationshipsCreated(), "Expecting 1 relationships created")
+	assert.Equal(t, 0, res.RelationshipsDeleted(), "Expecting 0 relationships deleted")
+	assert.Greater(t, res.InternalExecutionTime(),0.0, "Expecting internal execution time not to be 0.0")
+	assert.Equal(t, true, res.Empty(), "Expecting empty resultset")
+	q = "MATCH p = (:Person)-[:Visited]->(:Country) RETURN p"
+	res, err = graph.Query(q)
+	assert.Nil(t,err)
+	assert.Equal(t, len(res.results), 1, "expecting 1 result record")
+	assert.Equal(t, false, res.Empty(), "Expecting resultset to have records")
+	res,err = graph.Query("MATCH ()-[r]-() DELETE r")
+	assert.Nil(t,err)
+	assert.Equal(t, 1, res.RelationshipsDeleted(), "Expecting 1 relationships deleted")
+}
