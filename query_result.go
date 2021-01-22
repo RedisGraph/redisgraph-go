@@ -361,7 +361,8 @@ func (qr *QueryResult) IndicesDeleted() int {
 	return int(qr.getStat(INDICES_DELETED))
 }
 
-func (qr *QueryResult) RunTime() float64 {
+// Returns the query internal execution time in milliseconds
+func (qr *QueryResult) InternalExecutionTime() float64 {
 	return qr.getStat(INTERNAL_EXECUTION_TIME)
 }
 
