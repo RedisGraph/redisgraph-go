@@ -219,7 +219,7 @@ func TestArray(t *testing.T) {
 func TestMap(t *testing.T) {
 	createGraph()
 
-	q := "RETURN {val_1: 5, val_2: 'str'}"
+	q := "RETURN {val_1: 5, val_2: 'str', inner: {x: [1]}}"
 	res, err := graph.Query(q)
 	if err != nil {
 		t.Error(err)
@@ -228,7 +228,8 @@ func TestMap(t *testing.T) {
 	r := res.Record()
 	mapval := r.GetByIndex(0).(map[string]interface{})
 
-	expected := map[string]interface{}{"val_1": 5, "val_2": "str"}
+	inner_map := map[string]interface{}{"x": []interface{}{1}}
+	expected := map[string]interface{}{"val_1": 5, "val_2": "str", "inner": inner_map}
 	assert.Equal(t, mapval, expected, "expecting a map literal")
 
 	q = "MATCH (a:Country) RETURN a { .name }"
@@ -256,7 +257,7 @@ func TestPath(t *testing.T) {
 
 	res.Next()
 	r := res.Record()
-	
+
 	p, ok := r.GetByIndex(0).(Path)
 	assert.True(t, ok, "First column should contain path.")
 
