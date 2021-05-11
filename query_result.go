@@ -45,6 +45,7 @@ const (
 	VALUE_NODE
 	VALUE_PATH
 	VALUE_MAP
+	VALUE_POINT
 )
 
 type QueryResultHeader struct {
@@ -241,6 +242,16 @@ func (qr *QueryResult) parseMap(cell interface{}) map[string]interface{} {
 	return parsed_map
 }
 
+func (qr *QueryResult) parsePoint(cell interface{}) map[string]float64 {
+	point := make(map[string]float64)
+	var array = cell.([]interface{})
+	if len(array) == 2 {
+		point["latitude"], _ = redis.Float64(array[0], nil)
+		point["longitude"], _ = redis.Float64(array[1], nil)
+	}
+	return point
+}
+
 func (qr *QueryResult) parseScalar(cell []interface{}) interface{} {
 	t, _ := redis.Int(cell[0], nil)
 	v := cell[1]
@@ -275,6 +286,9 @@ func (qr *QueryResult) parseScalar(cell []interface{}) interface{} {
 
 	case VALUE_MAP:
 		s = qr.parseMap(v)
+
+	case VALUE_POINT:
+		s = qr.parsePoint(v)
 
 	case VALUE_UNKNOWN:
 		panic("Unknown scalar type\n")
