@@ -65,6 +65,20 @@ func TestMatchQuery(t *testing.T) {
 		t.Error(err)
 	}
 
+	checkQueryResults(t, res)
+}
+
+func TestMatchQueryRO(t *testing.T) {
+	q := "MATCH (s)-[e]->(d) RETURN s,e,d"
+	res, err := graph.QueryRO(q)
+	if err != nil {
+		t.Error(err)
+	}
+
+	checkQueryResults(t, res)
+}
+
+func checkQueryResults(t *testing.T, res *QueryResult) {
 	assert.Equal(t, len(res.results), 1, "expecting 1 result record")
 
 	res.Next()
@@ -118,6 +132,12 @@ func TestCreateQuery(t *testing.T) {
 	r := res.Record()
 	w := r.GetByIndex(0).(*Node)
 	assert.Equal(t, w.Label, "WorkPlace", "Unexpected node label.")
+}
+
+func TestCreateQueryROFailure(t *testing.T) {
+	q := "CREATE (w:WorkPlace {name:'RedisLabs'})"
+	_, err := graph.QueryRO(q)
+	assert.NotNil(t, err, "error should not be nil")
 }
 
 func TestErrorReporting(t *testing.T) {
