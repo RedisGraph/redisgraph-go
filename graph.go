@@ -108,8 +108,8 @@ func (g *Graph) Query(q string) (*QueryResult, error) {
 	return QueryResultNew(g, r)
 }
 
-// RO_Query executes a read only query against the graph.
-func (g *Graph) RO_Query(q string) (*QueryResult, error) {
+// ROQuery executes a read only query against the graph.
+func (g *Graph) ROQuery(q string) (*QueryResult, error) {
 
 	r, err := g.Conn.Do("GRAPH.RO_QUERY", g.Id, q, "--compact")
 	if err != nil {
