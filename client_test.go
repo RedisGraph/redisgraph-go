@@ -68,9 +68,9 @@ func TestMatchQuery(t *testing.T) {
 	checkQueryResults(t, res)
 }
 
-func TestMatchROQuery(t *testing.T) {
+func TestMatchRO_Query(t *testing.T) {
 	q := "MATCH (s)-[e]->(d) RETURN s,e,d"
-	res, err := graph.ROQuery(q)
+	res, err := graph.RO_Query(q)
 	if err != nil {
 		t.Error(err)
 	}
@@ -134,9 +134,9 @@ func TestCreateQuery(t *testing.T) {
 	assert.Equal(t, w.Label, "WorkPlace", "Unexpected node label.")
 }
 
-func TestCreateROQueryFailure(t *testing.T) {
+func TestCreateRO_QueryFailure(t *testing.T) {
 	q := "CREATE (w:WorkPlace {name:'RedisLabs'})"
-	_, err := graph.ROQuery(q)
+	_, err := graph.RO_Query(q)
 	assert.NotNil(t, err, "error should not be nil")
 }
 
