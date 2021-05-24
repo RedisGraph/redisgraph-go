@@ -108,6 +108,17 @@ func (g *Graph) Query(q string) (*QueryResult, error) {
 	return QueryResultNew(g, r)
 }
 
+// ROQuery executes a read only query against the graph.
+func (g *Graph) ROQuery(q string) (*QueryResult, error) {
+
+	r, err := g.Conn.Do("GRAPH.RO_QUERY", g.Id, q, "--compact")
+	if err != nil {
+		return nil, err
+	}
+
+	return QueryResultNew(g, r)
+}
+
 func (g *Graph) ParameterizedQuery(q string, params map[string]interface{}) (*QueryResult, error) {
 	if(params != nil){
 		q = BuildParamsHeader(params) + q
