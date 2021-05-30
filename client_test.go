@@ -6,6 +6,7 @@ import (
 
 	"github.com/gomodule/redigo/redis"
 	"github.com/stretchr/testify/assert"
+	"encoding/json"
 )
 
 var graph Graph
@@ -402,4 +403,51 @@ func TestQueryStatistics(t *testing.T) {
 	res,err = graph.Query("MATCH ()-[r]-() DELETE r")
 	assert.Nil(t,err)
 	assert.Equal(t, 1, res.RelationshipsDeleted(), "Expecting 1 relationships deleted")
+}
+
+func testUtils(t *testing.T) {
+	res := RandomString(10)
+	assert.Equal(t, len(res), 10)
+
+	res = ToString("test_string")
+	assert.Equal(t, res, "test_string")
+
+	res = ToString(10)
+	assert.Equal(t, res, "10")
+
+	res = ToString(1.2)
+	assert.Equal(t, res, "1.2")
+
+	res = ToString(true)
+	assert.Equal(t, res, "true")
+
+	res = ToString([3]int{1,2,3})
+	assert.Equal(t, res, "[1,2,3]")
+
+	var jsonStr = `
+{
+  "array": [
+	1,
+	2,
+	3
+  ],
+  "boolean": true,
+  "null": null,
+  "number": 123,
+  "object": {
+	"a": "b",
+	"c": "d",
+	"e": "f"
+  },
+  "string": "Hello World"
+}`
+
+	jsonMap := make(map[string]interface{})
+	err := json.Unmarshal([]byte(jsonStr), &jsonMap)
+	if err != nil {
+		panic(err)
+	}
+
+	res = ToString(jsonMap)
+	assert.Equal(t, res, "{ array: [1,2,3],boolean: true,null: null,number: 123,object: {a: b,c: d,e: f},string: Hello World}")
 }

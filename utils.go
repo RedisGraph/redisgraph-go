@@ -18,6 +18,14 @@ func arrayToString(arr []interface{}) string {
 	return "[" + strings.Join(strArray, ",") + "]"
 }
 
+func mapToString(data map[string]interface{}) string {
+	pairsArray := []string{}
+	for k, v := range data {
+		pairsArray = append(pairsArray, k + ": " + ToString(v))
+	}
+	return "{" + strings.Join(pairsArray, ",") + "}"
+}
+
 func ToString(i interface{}) string {
 	if(i == nil) {
 		return "null"
@@ -36,6 +44,9 @@ func ToString(i interface{}) string {
 	case []interface {}:
 		arr := i.([]interface{})
 		return arrayToString(arr)
+	case map[string]interface{}:
+		data := i.(map[string]interface{})
+		return mapToString(data)
 	default:
 		panic("Unrecognized type to convert to string")
 	}
