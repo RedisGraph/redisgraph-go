@@ -18,6 +18,17 @@ func arrayToString(arr []interface{}) string {
 	return "[" + strings.Join(strArray, ",") + "]"
 }
 
+// go array to string is [1 2 3] for [1, 2, 3] array
+// cypher expects comma separated array
+func strArrayToString(arr []string) string {
+	var arrayLength = len(arr)
+	strArray := []string{}
+	for i := 0; i < arrayLength; i++ {
+		strArray = append(strArray, ToString(arr[i]))
+	}
+	return "[" + strings.Join(strArray, ",") + "]"
+}
+
 func mapToString(data map[string]interface{}) string {
 	pairsArray := []string{}
 	for k, v := range data {
@@ -47,6 +58,9 @@ func ToString(i interface{}) string {
 	case map[string]interface{}:
 		data := i.(map[string]interface{})
 		return mapToString(data)
+	case []string:
+		arr := i.([]string)
+		return strArrayToString(arr)
 	default:
 		panic("Unrecognized type to convert to string")
 	}
