@@ -65,6 +65,20 @@ func TestMatchQuery(t *testing.T) {
 		t.Error(err)
 	}
 
+	checkQueryResults(t, res)
+}
+
+func TestMatchROQuery(t *testing.T) {
+	q := "MATCH (s)-[e]->(d) RETURN s,e,d"
+	res, err := graph.ROQuery(q)
+	if err != nil {
+		t.Error(err)
+	}
+
+	checkQueryResults(t, res)
+}
+
+func checkQueryResults(t *testing.T, res *QueryResult) {
 	assert.Equal(t, len(res.results), 1, "expecting 1 result record")
 
 	res.Next()
@@ -118,6 +132,12 @@ func TestCreateQuery(t *testing.T) {
 	r := res.Record()
 	w := r.GetByIndex(0).(*Node)
 	assert.Equal(t, w.Label, "WorkPlace", "Unexpected node label.")
+}
+
+func TestCreateROQueryFailure(t *testing.T) {
+	q := "CREATE (w:WorkPlace {name:'RedisLabs'})"
+	_, err := graph.ROQuery(q)
+	assert.NotNil(t, err, "error should not be nil")
 }
 
 func TestErrorReporting(t *testing.T) {
@@ -397,5 +417,75 @@ func TestQueryStatistics(t *testing.T) {
 	assert.Equal(t, false, res.Empty(), "Expecting resultset to have records")
 	res,err = graph.Query("MATCH ()-[r]-() DELETE r")
 	assert.Nil(t,err)
+	assert.Equal(t, 1, res.RelationshipsDeleted(), "Expecting 1 relationships deleted")
+}
+
+func TestUtils(t *testing.T) {
+	res := RandomString(10)
+	assert.Equal(t, len(res), 10)
+
+	res = ToString("test_string")
+	assert.Equal(t, res, "\"test_string\"")
+	
+	res = ToString(10)
+	assert.Equal(t, res, "10")	
+
+	res = ToString(1.2)
+	assert.Equal(t, res, "1.2")
+
+	res = ToString(true)
+	assert.Equal(t, res, "true")
+
+	var arr = []interface{}{1,2,3,"boom"}
+	res = ToString(arr)
+	assert.Equal(t, res, "[1,2,3,\"boom\"]")
+	
+	jsonMap := make(map[string]interface{})
+	jsonMap["object"] = map[string]interface{} {"foo": 1}
+	res = ToString(jsonMap)
+	assert.Equal(t, res, "{object: {foo: 1}}")
+}
+
+func TestNodeMapDatatype(t *testing.T) {
+	graph.Flush()
+	err := graph.Delete()
+	assert.Nil(t, err)
+
+	// Create 2 nodes connect via a single edge.
+	japan := NodeNew("Country", "j",
+		map[string]interface{}{
+			"name":       "Japan",
+			"population": 126800000,
+			"states":     []string{"Kanto", "Chugoku"},
+		})
+	john := NodeNew("Person", "p",
+		map[string]interface{}{
+			"name":   "John Doe",
+			"age":    33,
+			"gender": "male",
+			"status": "single",
+		})
+	edge := EdgeNew("Visited", john, japan, map[string]interface{}{"year": 2017})
+	// Introduce entities to graph.
+	graph.AddNode(john)
+	graph.AddNode(japan)
+	graph.AddEdge(edge)
+
+	// Flush graph to DB.
+	res, err := graph.Commit()
+	assert.Nil(t, err)
+	assert.Equal(t, 2, res.NodesCreated(), "Expecting 2 node created")
+	assert.Equal(t, 0, res.NodesDeleted(), "Expecting 0 nodes deleted")
+	assert.Equal(t, 8, res.PropertiesSet(), "Expecting 8 properties set")
+	assert.Equal(t, 1, res.RelationshipsCreated(), "Expecting 1 relationships created")
+	assert.Equal(t, 0, res.RelationshipsDeleted(), "Expecting 0 relationships deleted")
+	assert.Greater(t, res.InternalExecutionTime(), 0.0, "Expecting internal execution time not to be 0.0")
+	assert.Equal(t, true, res.Empty(), "Expecting empty resultset")
+	res, err = graph.Query("MATCH p = (:Person)-[:Visited]->(:Country) RETURN p")
+	assert.Nil(t, err)
+	assert.Equal(t, len(res.results), 1, "expecting 1 result record")
+	assert.Equal(t, false, res.Empty(), "Expecting resultset to have records")
+	res, err = graph.Query("MATCH ()-[r]-() DELETE r")
+	assert.Nil(t, err)
 	assert.Equal(t, 1, res.RelationshipsDeleted(), "Expecting 1 relationships deleted")
 }
