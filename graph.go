@@ -99,7 +99,6 @@ func (g *Graph) Commit() (*QueryResult, error) {
 
 // Query executes a query against the graph.
 func (g *Graph) Query(q string) (*QueryResult, error) {
-	
 	r, err := g.Conn.Do("GRAPH.QUERY", g.Id, q, "--compact")
 	if err != nil {
 		return nil, err
@@ -117,6 +116,31 @@ func (g *Graph) ROQuery(q string) (*QueryResult, error) {
 	}
 
 	return QueryResultNew(g, r)
+}
+
+// Sent query and an additional WAIT command using pipeline
+func (g *Graph) WriteWait(q string) (*QueryResult, error) {
+	c := g.Conn
+	timeout := 0
+	num_replicas := 1
+
+	c.Send("GRAPH.QUERY", g.Id, q, "--compact")
+	c.Send("WAIT", num_replicas, timeout)
+	c.Flush()
+
+	// reply from GRAPH.QUERY
+	result_set, err := c.Receive()
+	if err != nil {
+		return nil, err
+	}
+
+	// reply from WAIT
+	_, err = c.Receive()
+	if err != nil {
+		return nil, err
+	}
+
+	return QueryResultNew(g, result_set)
 }
 
 func (g *Graph) ParameterizedQuery(q string, params map[string]interface{}) (*QueryResult, error) {
