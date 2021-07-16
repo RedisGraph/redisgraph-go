@@ -119,9 +119,8 @@ func (g *Graph) ROQuery(q string) (*QueryResult, error) {
 }
 
 // Sent query and an additional WAIT command using pipeline
-func (g *Graph) WriteWait(q string) (*QueryResult, error) {
+func (g *Graph) WriteWait(q string, timeout int) (*QueryResult, error) {
 	c := g.Conn
-	timeout := 0
 	num_replicas := 1
 
 	c.Send("GRAPH.QUERY", g.Id, q, "--compact")
@@ -136,9 +135,9 @@ func (g *Graph) WriteWait(q string) (*QueryResult, error) {
 
 	// reply from WAIT
 	_, err = c.Receive()
-	if err != nil {
-		return nil, err
-	}
+	//if err != nil {
+	//	return nil, err
+	//}
 
 	return QueryResultNew(g, result_set)
 }
