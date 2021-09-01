@@ -103,11 +103,22 @@ func (g *Graph) Commit() (*QueryResult, error) {
 }
 
 // QueryOptionsNew instantiates a new QueryOptions struct.
-func QueryOptionsNew(timeout int) QueryOptions {
+func QueryOptionsNew() QueryOptions {
 	options := QueryOptions{
-		timeout:               timeout,
+		timeout:               -1,
 	}
 	return options
+}
+
+// QueryOptionsSetTimeout sets the timeout member of the QueryOptions struct
+func QueryOptionsSetTimeout(options QueryOptions, timeout int) QueryOptions {
+	options.timeout = timeout
+	return options
+}
+
+// QueryOptionsGetTimeout retrieves the timeout of the QueryOptions struct
+func QueryOptionsGetTimeout(options QueryOptions) int {
+	return options.timeout
 }
 
 // Query executes a query against the graph.
