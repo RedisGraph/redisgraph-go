@@ -123,6 +123,17 @@ Name: John Doe
 Age: 33
 ```
 
+## Running queries with timeouts
+
+Queries can be run with a millisecond-level timeout as described in [the module documentation](https://oss.redis.com/redisgraph/configuration/#timeout). To take advantage of this feature, the `QueryOptions` struct should be used:
+
+```go
+options := NewQueryOptions().SetTimeout(10) // 10-millisecond timeout
+res, err := graph.QueryWithOptions("MATCH (src {name: 'John Doe'})-[*]->(dest) RETURN dest", options)
+```
+
+`ParameterizedQueryWithOptions` and `ROQueryWithOptions` endpoints are also exposed by the client.
+
 ## Running tests
 
 A simple test suite is provided, and can be run with:
