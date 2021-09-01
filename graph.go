@@ -102,22 +102,21 @@ func (g *Graph) Commit() (*QueryResult, error) {
 	return g.Query(q)
 }
 
-// QueryOptionsNew instantiates a new QueryOptions struct.
-func QueryOptionsNew() QueryOptions {
-	options := QueryOptions{
+// NewQueryOptions instantiates a new QueryOptions struct.
+func NewQueryOptions() *QueryOptions {
+	return &QueryOptions{
 		timeout:               -1,
 	}
-	return options
 }
 
-// QueryOptionsSetTimeout sets the timeout member of the QueryOptions struct
-func QueryOptionsSetTimeout(options QueryOptions, timeout int) QueryOptions {
+// SetTimeout sets the timeout member of the QueryOptions struct
+func (options *QueryOptions) SetTimeout(timeout int) *QueryOptions {
 	options.timeout = timeout
 	return options
 }
 
-// QueryOptionsGetTimeout retrieves the timeout of the QueryOptions struct
-func QueryOptionsGetTimeout(options QueryOptions) int {
+// GetTimeout retrieves the timeout of the QueryOptions struct
+func (options *QueryOptions) GetTimeout() int {
 	return options.timeout
 }
 
@@ -150,7 +149,7 @@ func (g *Graph) ParameterizedQuery(q string, params map[string]interface{}) (*Qu
 }
 
 // QueryWithOptions issues a query with the given timeout
-func (g *Graph) QueryWithOptions(q string, options QueryOptions) (*QueryResult, error) {
+func (g *Graph) QueryWithOptions(q string, options *QueryOptions) (*QueryResult, error) {
 	var r interface{}
 	var err error
 	if(options.timeout >= 0) {
@@ -166,7 +165,7 @@ func (g *Graph) QueryWithOptions(q string, options QueryOptions) (*QueryResult, 
 }
 
 // ParameterizedQueryWithOptions issues a parameterized query with the given timeout
-func (g *Graph) ParameterizedQueryWithOptions(q string, params map[string]interface{}, options QueryOptions) (*QueryResult, error) {
+func (g *Graph) ParameterizedQueryWithOptions(q string, params map[string]interface{}, options *QueryOptions) (*QueryResult, error) {
 	if(params != nil){
 		q = BuildParamsHeader(params) + q
 	}
@@ -174,7 +173,7 @@ func (g *Graph) ParameterizedQueryWithOptions(q string, params map[string]interf
 }
 
 // ROQueryWithOptions issues a read-only query with the given timeout
-func (g *Graph) ROQueryWithOptions(q string, options QueryOptions) (*QueryResult, error) {
+func (g *Graph) ROQueryWithOptions(q string, options *QueryOptions) (*QueryResult, error) {
 	var r interface{}
 	var err error
 	if(options.timeout >= 0) {
