@@ -27,7 +27,7 @@ type Graph struct {
 
 // New creates a new graph.
 func GraphNew(Id string, conn redis.Conn) Graph {
-	g := Graph{
+	return Graph{
 		Id:                Id,
 		Nodes:             make(map[string]*Node, 0),
 		Edges:             make([]*Edge, 0),
@@ -36,7 +36,6 @@ func GraphNew(Id string, conn redis.Conn) Graph {
 		relationshipTypes: make([]string, 0),
 		properties:        make([]string, 0),
 	}
-	return g
 }
 
 // AddNode adds a node to the graph.
@@ -205,7 +204,7 @@ func (g *Graph) getLabel(lblIdx int) string {
 			// Retry.
 			if lblIdx >= len(g.labels) {
 				// Error!
-				panic("Unknow label index.")
+				panic("Unknown label index.")
 			}
 		}
 		g.mutex.Unlock()
@@ -225,7 +224,7 @@ func (g *Graph) getRelation(relIdx int) string {
 			// Retry.
 			if relIdx >= len(g.relationshipTypes) {
 				// Error!
-				panic("Unknow relation type index.")
+				panic("Unknown relation type index.")
 			}
 		}
 		g.mutex.Unlock()
@@ -246,7 +245,7 @@ func (g *Graph) getProperty(propIdx int) string {
 			// Retry.
 			if propIdx >= len(g.properties) {
 				// Error!
-				panic("Unknow property index.")
+				panic("Unknown property index.")
 			}
 		}
 		g.mutex.Unlock()
