@@ -473,3 +473,22 @@ func TestNodeMapDatatype(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, 1, res.RelationshipsDeleted(), "Expecting 1 relationships deleted")
 }
+
+func TestTimeout(t *testing.T) {
+	// Instantiate a new QueryOptions struct with a 1-second timeout
+	options := NewQueryOptions().SetTimeout(1)
+
+	// Verify that the timeout was set properly
+	assert.Equal(t, 1, options.GetTimeout())
+
+	// Issue a long-running query with a 1-millisecond timeout.
+	res, err := graph.QueryWithOptions("UNWIND range(0, 1000000) AS v RETURN v", options)
+	assert.Nil(t, res)
+	assert.NotNil(t, err)
+
+	params := make(map[string]interface{})
+	params["ub"] = 1000000
+	res, err = graph.ParameterizedQueryWithOptions("UNWIND range(0, $ub) AS v RETURN v", params, options);
+	assert.Nil(t, res)
+	assert.NotNil(t, err)
+}

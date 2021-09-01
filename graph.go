@@ -8,6 +8,11 @@ import (
 	"github.com/gomodule/redigo/redis"
 )
 
+// QueryOptions are a set of additional arguments to be emitted with a query.
+type QueryOptions struct {
+	timeout           int
+}
+
 // Graph represents a graph, which is a collection of nodes and edges.
 type Graph struct {
 	Id                string
@@ -97,9 +102,26 @@ func (g *Graph) Commit() (*QueryResult, error) {
 	return g.Query(q)
 }
 
+// NewQueryOptions instantiates a new QueryOptions struct.
+func NewQueryOptions() *QueryOptions {
+	return &QueryOptions{
+		timeout:               -1,
+	}
+}
+
+// SetTimeout sets the timeout member of the QueryOptions struct
+func (options *QueryOptions) SetTimeout(timeout int) *QueryOptions {
+	options.timeout = timeout
+	return options
+}
+
+// GetTimeout retrieves the timeout of the QueryOptions struct
+func (options *QueryOptions) GetTimeout() int {
+	return options.timeout
+}
+
 // Query executes a query against the graph.
 func (g *Graph) Query(q string) (*QueryResult, error) {
-	
 	r, err := g.Conn.Do("GRAPH.QUERY", g.Id, q, "--compact")
 	if err != nil {
 		return nil, err
@@ -124,6 +146,46 @@ func (g *Graph) ParameterizedQuery(q string, params map[string]interface{}) (*Qu
 		q = BuildParamsHeader(params) + q
 	}
 	return g.Query(q);
+}
+
+// QueryWithOptions issues a query with the given timeout
+func (g *Graph) QueryWithOptions(q string, options *QueryOptions) (*QueryResult, error) {
+	var r interface{}
+	var err error
+	if(options.timeout >= 0) {
+		r, err = g.Conn.Do("GRAPH.QUERY", g.Id, q, "--compact", "timeout", options.timeout)
+	} else {
+		r, err = g.Conn.Do("GRAPH.QUERY", g.Id, q, "--compact")
+	}
+	if err != nil {
+		return nil, err
+	}
+
+	return QueryResultNew(g, r)
+}
+
+// ParameterizedQueryWithOptions issues a parameterized query with the given timeout
+func (g *Graph) ParameterizedQueryWithOptions(q string, params map[string]interface{}, options *QueryOptions) (*QueryResult, error) {
+	if(params != nil){
+		q = BuildParamsHeader(params) + q
+	}
+	return g.QueryWithOptions(q, options);
+}
+
+// ROQueryWithOptions issues a read-only query with the given timeout
+func (g *Graph) ROQueryWithOptions(q string, options *QueryOptions) (*QueryResult, error) {
+	var r interface{}
+	var err error
+	if(options.timeout >= 0) {
+		r, err = g.Conn.Do("GRAPH.RO_QUERY", g.Id, q, "--compact", "timeout", options.timeout)
+	} else {
+		r, err = g.Conn.Do("GRAPH.RO_QUERY", g.Id, q, "--compact")
+	}
+	if err != nil {
+		return nil, err
+	}
+
+	return QueryResultNew(g, r)
 }
 
 // Merge pattern
