@@ -176,7 +176,7 @@ func (qr *QueryResult) parseNode(cell interface{}) *Node {
 	c, _ := redis.Values(cell, nil)
 	id, _ := redis.Uint64(c[0], nil)
 	labels, _ := redis.Ints(c[1], nil)
-	if len(labels) > 0 {
+	if len(labels) > 0 && labels[0] >= 0 {
 		label = qr.graph.getLabel(labels[0])
 	}
 
