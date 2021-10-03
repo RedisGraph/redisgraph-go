@@ -19,7 +19,7 @@ jobs:
   build:
     docker:
       - image: circleci/golang:1.12
-      
+
       - image: redislabs/redisgraph:edge
 
     working_directory: /go/src/github.com/RedisGraph/redisgraph-go
@@ -27,8 +27,11 @@ jobs:
       - checkout
       - run: make test
       - early_return_for_forked_pull_requests
+      - run: |
+        apt-get update
+        apt-get upgrade -y
       - run: bash <(curl -s https://raw.githubusercontent.com/codecov/codecov-bash/master/codecov) -t ${CODECOV_TOKEN}
-      
+
 workflows:
   version: 2
   commit:
