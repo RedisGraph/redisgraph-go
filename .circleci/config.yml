@@ -25,11 +25,11 @@ jobs:
     working_directory: /go/src/github.com/RedisGraph/redisgraph-go
     steps:
       - checkout
-      - run: make test
-      - early_return_for_forked_pull_requests
       - run: |
           apt-get update
           apt-get upgrade -y
+      - run: make test
+      - early_return_for_forked_pull_requests
       - run: bash <(curl -s https://raw.githubusercontent.com/codecov/codecov-bash/master/codecov) -t ${CODECOV_TOKEN}
 
 workflows:
