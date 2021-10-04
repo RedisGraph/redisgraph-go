@@ -48,6 +48,8 @@ func ToString(i interface{}) string {
 		return strconv.Quote(s)
 	case int:
 		return strconv.Itoa(i.(int))
+	case int64:
+		return strconv.FormatInt(i.(int64), 10)
 	case float64:
 		return strconv.FormatFloat(i.(float64), 'f', -1, 64)
 	case bool:

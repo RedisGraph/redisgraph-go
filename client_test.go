@@ -420,10 +420,13 @@ func TestUtils(t *testing.T) {
 	res = ToString(true)
 	assert.Equal(t, res, "true")
 
-	var arr = []interface{}{1,2,3,"boom"}
+	res = ToString(int64(10))
+	assert.Equal(t, res, "10")
+
+	var arr = []interface{}{1, 2, 3, int64(4), "boom"}
 	res = ToString(arr)
-	assert.Equal(t, res, "[1,2,3,\"boom\"]")
-	
+	assert.Equal(t, res, "[1,2,3,4,\"boom\"]")
+
 	jsonMap := make(map[string]interface{})
 	jsonMap["object"] = map[string]interface{} {"foo": 1}
 	res = ToString(jsonMap)
