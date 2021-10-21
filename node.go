@@ -8,13 +8,13 @@ import (
 // Node represents a node within a graph.
 type Node struct {
 	ID         uint64
-	Label      string
+	Labels     []string
 	Alias      string
 	Properties map[string]interface{}
 	graph      *Graph
 }
 
-func NodeNew(label string, alias string, properties map[string]interface{}) *Node {
+func NodeNew(labels []string, alias string, properties map[string]interface{}) *Node {
 
 	p := properties
 	if p == nil {
@@ -22,7 +22,7 @@ func NodeNew(label string, alias string, properties map[string]interface{}) *Nod
 	}
 
 	return &Node{
-		Label:      label,
+		Labels:     labels,
 		Alias:      alias,
 		Properties: p,
 		graph:      nil,
@@ -60,8 +60,8 @@ func (n Node) Encode() string {
 		s = append(s, n.Alias)
 	}
 
-	if n.Label != "" {
-		s = append(s, ":", n.Label)
+	for _, label := range n.Labels {
+		s = append(s, ":", label)
 	}
 
 	if len(n.Properties) > 0 {

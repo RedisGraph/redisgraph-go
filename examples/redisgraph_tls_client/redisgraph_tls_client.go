@@ -5,11 +5,12 @@ import (
 	"crypto/x509"
 	"flag"
 	"fmt"
-	"github.com/RedisGraph/redisgraph-go"
-	"github.com/gomodule/redigo/redis"
 	"io/ioutil"
 	"log"
 	"os"
+
+	"github.com/RedisGraph/redisgraph-go"
+	"github.com/gomodule/redigo/redis"
 )
 
 var (
@@ -85,6 +86,6 @@ func main() {
 	res.Next()
 	r := res.Record()
 	w := r.GetByIndex(0).(*redisgraph.Node)
-	fmt.Println(w.Label)
+	fmt.Println(w.Labels[0])
 	// Output: WorkPlace
 }
