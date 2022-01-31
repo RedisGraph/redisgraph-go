@@ -5,7 +5,7 @@ import (
 	"crypto/x509"
 	"flag"
 	"fmt"
-	"github.com/RedisGraph/redisgraph-go"
+	"github.com/RedisGraph/redisgraph-go/v2"
 	"github.com/gomodule/redigo/redis"
 	"io/ioutil"
 	"log"
