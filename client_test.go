@@ -410,24 +410,42 @@ func TestUtils(t *testing.T) {
 
 	res = ToString("test_string")
 	assert.Equal(t, res, "\"test_string\"")
-	
-	res = ToString(10)
-	assert.Equal(t, res, "10")	
 
-	res = ToString(1.2)
+	res = ToString(10)
+	assert.Equal(t, res, "10")
+
+	res = ToString(float64(1.2))
+	assert.Equal(t, res, "1.2")
+
+	res = ToString(int64(-3))
+	assert.Equal(t, res, "-3")
+
+	res = ToString(int32(-4))
+	assert.Equal(t, res, "-4")
+
+	res = ToString(uint(3))
+	assert.Equal(t, res, "3")
+
+	res = ToString(uint64(3))
+	assert.Equal(t, res, "3")
+
+	res = ToString(uint32(3))
+	assert.Equal(t, res, "3")
+
+	res = ToString(float32(1.2))
 	assert.Equal(t, res, "1.2")
 
 	res = ToString(true)
 	assert.Equal(t, res, "true")
 
-	var arr = []interface{}{1,2,3,"boom"}
+	var arr = []interface{}{1, 2, 3, "boom", int64(-40)}
 	res = ToString(arr)
-	assert.Equal(t, res, "[1,2,3,\"boom\"]")
-	
+	assert.Equal(t, res, "[1,2,3,\"boom\",-40]")
+
 	jsonMap := make(map[string]interface{})
-	jsonMap["object"] = map[string]interface{} {"foo": 1}
+	jsonMap["object"] = map[string]interface{}{"foo": 1, "bar": float32(4.3)}
 	res = ToString(jsonMap)
-	assert.Equal(t, res, "{object: {foo: 1}}")
+	assert.Equal(t, res, "{object: {foo: 1,bar: 4.3}}")
 }
 
 func TestNodeMapDatatype(t *testing.T) {
