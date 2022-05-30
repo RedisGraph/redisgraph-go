@@ -14,7 +14,7 @@ type Node struct {
 	graph      *Graph
 }
 
-// Create a new Node
+// NodeNew create a new Node
 func NodeNew(labels []string, alias string, properties map[string]interface{}) *Node {
 
 	p := properties
@@ -30,12 +30,12 @@ func NodeNew(labels []string, alias string, properties map[string]interface{}) *
 	}
 }
 
-// Asssign a new property to node
+// SetProperty asssign a new property to node
 func (n *Node) SetProperty(key string, value interface{}) {
 	n.Properties[key] = value
 }
 
-// Retrieves property from node
+// GetProperty retrieves property from node
 func (n Node) GetProperty(key string) interface{} {
 	v, _ := n.Properties[key]
 	return v
@@ -56,7 +56,7 @@ func (n Node) String() string {
 	return s
 }
 
-// String makes Node satisfy the Stringer interface
+// Encode makes Node satisfy the Stringer interface
 func (n Node) Encode() string {
 	s := []string{"("}
 

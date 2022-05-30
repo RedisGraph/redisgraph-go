@@ -17,7 +17,7 @@ type Edge struct {
 	graph       *Graph
 }
 
-// Create a new Edge
+// EdgeNew create a new Edge
 func EdgeNew(relation string, srcNode *Node, destNode *Node, properties map[string]interface{}) *Edge {
 	p := properties
 	if p == nil {
@@ -33,18 +33,18 @@ func EdgeNew(relation string, srcNode *Node, destNode *Node, properties map[stri
 	}
 }
 
-// Assign a new property to edge
+// SetProperty assign a new property to edge
 func (e *Edge) SetProperty(key string, value interface{}) {
 	e.Properties[key] = value
 }
 
-// Retrieves property from edge
+// GetProperty retrieves property from edge
 func (e *Edge) GetProperty(key string) interface{} {
 	v, _ := e.Properties[key]
 	return v
 }
 
-// Returns edge source node ID
+// SourceNodeID returns edge source node ID
 func (e Edge) SourceNodeID() uint64 {
 	if e.Source != nil {
 		return e.Source.ID
@@ -53,7 +53,7 @@ func (e Edge) SourceNodeID() uint64 {
 	}
 }
 
-// Returns edge destination node ID
+// DestNodeID returns edge destination node ID
 func (e Edge) DestNodeID() uint64 {
 	if e.Source != nil {
 		return e.Destination.ID
@@ -77,7 +77,7 @@ func (e Edge) String() string {
 	return s
 }
 
-// String makes Edge satisfy the Stringer interface
+// Encode makes Edge satisfy the Stringer interface
 func (e Edge) Encode() string {
 	s := []string{"(", e.Source.Alias, ")"}
 
