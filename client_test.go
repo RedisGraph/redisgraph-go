@@ -439,10 +439,13 @@ func TestMultiLabelNode(t *testing.T) {
 	// create a multi label node
 	multiLabelNode := NodeNew([]string{"A","B"}, "n", nil)
 	graph.AddNode(multiLabelNode)
-	res, err := graph.Commit()
+	_, err = graph.Commit()
+	assert.Nil(t, err)
 
 	// fetch node
-	res, err = graph.Query("MATCH (n) RETURN n")
+	res, err := graph.Query("MATCH (n) RETURN n")
+	assert.Nil(t, err)
+
 	res.Next()
 	r := res.Record()
 	n := r.GetByIndex(0).(*Node)

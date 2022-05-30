@@ -139,13 +139,10 @@ func (qr *QueryResult) parseRecords(raw_result_set []interface{}) {
 			case COLUMN_SCALAR:
 				s, _ := redis.Values(c, nil)
 				values[idx] = qr.parseScalar(s)
-				break
 			case COLUMN_NODE:
 				values[idx] = qr.parseNode(c)
-				break
 			case COLUMN_RELATION:
 				values[idx] = qr.parseEdge(c)
-				break
 			default:
 				panic("Unknown column type.")
 			}

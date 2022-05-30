@@ -272,7 +272,7 @@ func (g *Graph) CallProcedure(procedure string, yield []string, args ...interfac
 	}
 	q += fmt.Sprintf("%s)", strings.Join(tmp, ","))
 
-	if yield != nil && len(yield) > 0 {
+	if len(yield) > 0 {
 		q += fmt.Sprintf(" YIELD %s", strings.Join(yield, ","))
 	}
 
