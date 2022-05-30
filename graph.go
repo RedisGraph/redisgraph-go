@@ -75,6 +75,12 @@ func (g *Graph) ExecutionPlan(q string) (string, error) {
 // Delete removes the graph.
 func (g *Graph) Delete() error {
 	_, err := g.Conn.Do("GRAPH.DELETE", g.Id)
+
+	// clear internal mappings
+	g.labels = g.labels[:0]
+	g.properties = g.properties[:0]
+	g.relationshipTypes = g.relationshipTypes[:0]
+
 	return err
 }
 
@@ -266,7 +272,7 @@ func (g *Graph) CallProcedure(procedure string, yield []string, args ...interfac
 	}
 	q += fmt.Sprintf("%s)", strings.Join(tmp, ","))
 
-	if yield != nil && len(yield) > 0 {
+	if len(yield) > 0 {
 		q += fmt.Sprintf(" YIELD %s", strings.Join(yield, ","))
 	}
 

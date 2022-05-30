@@ -5,6 +5,7 @@ import (
 	"os"
 	"strconv"
 	"strings"
+
 	"github.com/gomodule/redigo/redis"
 	"github.com/olekukonko/tablewriter"
 )
@@ -16,10 +17,10 @@ const (
 	RELATIONSHIPS_DELETED   string = "Relationships deleted"
 	PROPERTIES_SET          string = "Properties set"
 	RELATIONSHIPS_CREATED   string = "Relationships created"
-	INDICES_CREATED string = "Indices created"
-	INDICES_DELETED string = "Indices deleted"
+	INDICES_CREATED         string = "Indices created"
+	INDICES_DELETED         string = "Indices deleted"
 	INTERNAL_EXECUTION_TIME string = "Query internal execution time"
-	CACHED_EXECUTION string = "Cached execution"
+	CACHED_EXECUTION        string = "Cached execution"
 )
 
 type ResultSetColumnTypes int
@@ -54,11 +55,11 @@ type QueryResultHeader struct {
 
 // QueryResult represents the results of a query.
 type QueryResult struct {
-	graph      			*Graph
-	header     			QueryResultHeader
-	results    			[]*Record
-	statistics 			map[string]float64
-	current_record_idx	int
+	graph              *Graph
+	header             QueryResultHeader
+	results            []*Record
+	statistics         map[string]float64
+	currentRecordIdx   int
 }
 
 func QueryResultNew(g *Graph, response interface{}) (*QueryResult, error) {
@@ -69,8 +70,8 @@ func QueryResultNew(g *Graph, response interface{}) (*QueryResult, error) {
 			column_names: make([]string, 0),
 			column_types: make([]ResultSetColumnTypes, 0),
 		},
-		graph: g,
-		current_record_idx: -1,
+		graph:              g,
+		currentRecordIdx: -1,
 	}
 
 	r, _ := redis.Values(response, nil)
@@ -138,13 +139,10 @@ func (qr *QueryResult) parseRecords(raw_result_set []interface{}) {
 			case COLUMN_SCALAR:
 				s, _ := redis.Values(c, nil)
 				values[idx] = qr.parseScalar(s)
-				break
 			case COLUMN_NODE:
 				values[idx] = qr.parseNode(c)
-				break
 			case COLUMN_RELATION:
 				values[idx] = qr.parseEdge(c)
-				break
 			default:
 				panic("Unknown column type.")
 			}
@@ -172,18 +170,18 @@ func (qr *QueryResult) parseNode(cell interface{}) *Node {
 	// [label string offset (integer)],
 	// [[name, value type, value] X N]
 
-	var label string
 	c, _ := redis.Values(cell, nil)
 	id, _ := redis.Uint64(c[0], nil)
-	labels, _ := redis.Ints(c[1], nil)
-	if len(labels) > 0 {
-		label = qr.graph.getLabel(labels[0])
+	labelIds, _ := redis.Ints(c[1], nil)
+	labels := make([]string, len(labelIds))
+	for i := 0; i < len(labelIds); i++ {
+		labels[i] = qr.graph.getLabel(labelIds[i])
 	}
 
 	rawProps, _ := redis.Values(c[2], nil)
 	properties := qr.parseProperties(rawProps)
 
-	n := NodeNew(label, "", properties)
+	n := NodeNew(labels, "", properties)
 	n.ID = id
 	return n
 }
@@ -296,8 +294,8 @@ func (qr *QueryResult) Next() bool {
 	if qr.Empty() {
 		return false
 	}
-	if qr.current_record_idx < len(qr.results)-1 {
-		qr.current_record_idx++
+	if qr.currentRecordIdx < len(qr.results)-1 {
+		qr.currentRecordIdx++
 		return true
 	} else {
 		return false
@@ -306,8 +304,8 @@ func (qr *QueryResult) Next() bool {
 
 // Record returns the current record.
 func (qr *QueryResult) Record() *Record {
-	if qr.current_record_idx >= 0 && qr.current_record_idx < len(qr.results) {
-		return qr.results[qr.current_record_idx]
+	if qr.currentRecordIdx >= 0 && qr.currentRecordIdx < len(qr.results) {
+		return qr.results[qr.currentRecordIdx]
 	} else {
 		return nil
 	}
@@ -386,4 +384,3 @@ func (qr *QueryResult) InternalExecutionTime() float64 {
 func (qr *QueryResult) CachedExecution() int {
 	return int(qr.getStat(CACHED_EXECUTION))
 }
-

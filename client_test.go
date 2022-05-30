@@ -16,8 +16,8 @@ func createGraph() {
 	graph = GraphNew("social", conn)
 
 	// Create 2 nodes connect via a single edge.
-	japan := NodeNew("Country", "j", nil)
-	john := NodeNew("Person", "p", nil)
+	japan := NodeNew([]string{"Country"}, "j", nil)
+	john := NodeNew([]string{"Person"}, "p", nil)
 	edge := EdgeNew("Visited", john, japan, nil)
 
 	// Set node properties.
@@ -91,9 +91,9 @@ func checkQueryResults(t *testing.T, res *QueryResult) {
 	d, ok := r.GetByIndex(2).(*Node)
 	assert.True(t, ok, "Third column should contain nodes.")
 
-	assert.Equal(t, s.Label, "Person", "Node should be of type 'Person'")
+	assert.Equal(t, s.Labels[0], "Person", "Node should be of type 'Person'")
 	assert.Equal(t, e.Relation, "Visited", "Edge should be of relation type 'Visited'")
-	assert.Equal(t, d.Label, "Country", "Node should be of type 'Country'")
+	assert.Equal(t, d.Labels[0], "Country", "Node should be of type 'Country'")
 
 	assert.Equal(t, len(s.Properties), 4, "Person node should have 4 properties")
 
@@ -131,7 +131,7 @@ func TestCreateQuery(t *testing.T) {
 	res.Next()
 	r := res.Record()
 	w := r.GetByIndex(0).(*Node)
-	assert.Equal(t, w.Label, "WorkPlace", "Unexpected node label.")
+	assert.Equal(t, w.Labels[0], "WorkPlace", "Unexpected node label.")
 }
 
 func TestCreateROQueryFailure(t *testing.T) {
@@ -199,8 +199,8 @@ func TestArray(t *testing.T) {
 		t.Error(err)
 	}
 
-	a := NodeNew("person", "", nil)
-	b := NodeNew("person", "", nil)
+	a := NodeNew([]string{"person"}, "", nil)
+	b := NodeNew([]string{"person"}, "", nil)
 
 	a.SetProperty("name", "a")
 	a.SetProperty("age", 32)
@@ -288,9 +288,9 @@ func TestPath(t *testing.T) {
 	e := p.GetEdge(0)
 	d := p.LastNode()
 
-	assert.Equal(t, s.Label, "Person", "Node should be of type 'Person'")
+	assert.Equal(t, s.Labels[0], "Person", "Node should be of type 'Person'")
 	assert.Equal(t, e.Relation, "Visited", "Edge should be of relation type 'Visited'")
-	assert.Equal(t, d.Label, "Country", "Node should be of type 'Country'")
+	assert.Equal(t, d.Labels[0], "Country", "Node should be of type 'Country'")
 
 	assert.Equal(t, len(s.Properties), 4, "Person node should have 4 properties")
 
@@ -308,12 +308,12 @@ func TestPath(t *testing.T) {
 
 func TestParameterizedQuery(t *testing.T) {
 	createGraph()
-	params := []interface{}{1, 2.3, "str", true, false, nil, []interface {}{0, 1, 2}, []interface {}{"0", "1", "2"}}
+	params := []interface{}{1, 2.3, "str", true, false, nil, []interface{}{0, 1, 2}, []interface{}{"0", "1", "2"}}
 	q := "RETURN $param"
 	params_map := make(map[string]interface{})
 	for index, param := range params {
 		params_map["param"] = param
-		res, err := graph.ParameterizedQuery(q, params_map);
+		res, err := graph.ParameterizedQuery(q, params_map)
 		if err != nil {
 			t.Error(err)
 		}
@@ -348,24 +348,24 @@ func TestCreateIndex(t *testing.T) {
 func TestQueryStatistics(t *testing.T) {
 	graph.Flush()
 	err := graph.Delete()
-	assert.Nil(t,err)
+	assert.Nil(t, err)
 
 	q := "CREATE (:Person{name:'a',age:32,array:[0,1,2]})"
 	res, err := graph.Query(q)
-	assert.Nil(t,err)
+	assert.Nil(t, err)
 
 	assert.Equal(t, 1, res.NodesCreated(), "Expecting 1 node created")
 	assert.Equal(t, 0, res.NodesDeleted(), "Expecting 0 nodes deleted")
-	assert.Greater(t, res.InternalExecutionTime(),0.0, "Expecting internal execution time not to be 0.0")
+	assert.Greater(t, res.InternalExecutionTime(), 0.0, "Expecting internal execution time not to be 0.0")
 	assert.Equal(t, true, res.Empty(), "Expecting empty resultset")
 
-	res,err = graph.Query("MATCH (n) DELETE n")
-	assert.Nil(t,err)
+	res, err = graph.Query("MATCH (n) DELETE n")
+	assert.Nil(t, err)
 	assert.Equal(t, 1, res.NodesDeleted(), "Expecting 1 nodes deleted")
 
 	// Create 2 nodes connect via a single edge.
-	japan := NodeNew("Country", "j", nil)
-	john := NodeNew("Person", "p", nil)
+	japan := NodeNew([]string{"Country"}, "j", nil)
+	john := NodeNew([]string{"Person"}, "p", nil)
 	edge := EdgeNew("Visited", john, japan, nil)
 
 	// Set node properties.
@@ -386,21 +386,21 @@ func TestQueryStatistics(t *testing.T) {
 
 	// Flush graph to DB.
 	res, err = graph.Commit()
-	assert.Nil(t,err)
+	assert.Nil(t, err)
 	assert.Equal(t, 2, res.NodesCreated(), "Expecting 2 node created")
 	assert.Equal(t, 0, res.NodesDeleted(), "Expecting 0 nodes deleted")
 	assert.Equal(t, 7, res.PropertiesSet(), "Expecting 7 properties set")
 	assert.Equal(t, 1, res.RelationshipsCreated(), "Expecting 1 relationships created")
 	assert.Equal(t, 0, res.RelationshipsDeleted(), "Expecting 0 relationships deleted")
-	assert.Greater(t, res.InternalExecutionTime(),0.0, "Expecting internal execution time not to be 0.0")
+	assert.Greater(t, res.InternalExecutionTime(), 0.0, "Expecting internal execution time not to be 0.0")
 	assert.Equal(t, true, res.Empty(), "Expecting empty resultset")
 	q = "MATCH p = (:Person)-[:Visited]->(:Country) RETURN p"
 	res, err = graph.Query(q)
-	assert.Nil(t,err)
+	assert.Nil(t, err)
 	assert.Equal(t, len(res.results), 1, "expecting 1 result record")
 	assert.Equal(t, false, res.Empty(), "Expecting resultset to have records")
-	res,err = graph.Query("MATCH ()-[r]-() DELETE r")
-	assert.Nil(t,err)
+	res, err = graph.Query("MATCH ()-[r]-() DELETE r")
+	assert.Nil(t, err)
 	assert.Equal(t, 1, res.RelationshipsDeleted(), "Expecting 1 relationships deleted")
 }
 
@@ -410,9 +410,9 @@ func TestUtils(t *testing.T) {
 
 	res = ToString("test_string")
 	assert.Equal(t, res, "\"test_string\"")
-	
+
 	res = ToString(10)
-	assert.Equal(t, res, "10")	
+	assert.Equal(t, res, "10")
 
 	res = ToString(1.2)
 	assert.Equal(t, res, "1.2")
@@ -420,14 +420,40 @@ func TestUtils(t *testing.T) {
 	res = ToString(true)
 	assert.Equal(t, res, "true")
 
-	var arr = []interface{}{1,2,3,"boom"}
+	var arr = []interface{}{1, 2, 3, "boom"}
 	res = ToString(arr)
 	assert.Equal(t, res, "[1,2,3,\"boom\"]")
-	
+
 	jsonMap := make(map[string]interface{})
-	jsonMap["object"] = map[string]interface{} {"foo": 1}
+	jsonMap["object"] = map[string]interface{}{"foo": 1}
 	res = ToString(jsonMap)
 	assert.Equal(t, res, "{object: {foo: 1}}")
+}
+
+func TestMultiLabelNode(t *testing.T) {
+	// clear database
+	graph.Flush()
+	err := graph.Delete()
+	assert.Nil(t, err)
+
+	// create a multi label node
+	multiLabelNode := NodeNew([]string{"A","B"}, "n", nil)
+	graph.AddNode(multiLabelNode)
+	_, err = graph.Commit()
+	assert.Nil(t, err)
+
+	// fetch node
+	res, err := graph.Query("MATCH (n) RETURN n")
+	assert.Nil(t, err)
+
+	res.Next()
+	r := res.Record()
+	n := r.GetByIndex(0).(*Node)
+
+	// expecting 2 labels
+	assert.Equal(t, len(n.Labels), 2, "expecting 2 labels")
+	assert.Equal(t, n.Labels[0], "A")
+	assert.Equal(t, n.Labels[1], "B")
 }
 
 func TestNodeMapDatatype(t *testing.T) {
@@ -436,13 +462,13 @@ func TestNodeMapDatatype(t *testing.T) {
 	assert.Nil(t, err)
 
 	// Create 2 nodes connect via a single edge.
-	japan := NodeNew("Country", "j",
+	japan := NodeNew([]string{"Country"}, "j",
 		map[string]interface{}{
 			"name":       "Japan",
 			"population": 126800000,
 			"states":     []string{"Kanto", "Chugoku"},
 		})
-	john := NodeNew("Person", "p",
+	john := NodeNew([]string{"Person"}, "p",
 		map[string]interface{}{
 			"name":   "John Doe",
 			"age":    33,
@@ -488,7 +514,7 @@ func TestTimeout(t *testing.T) {
 
 	params := make(map[string]interface{})
 	params["ub"] = 1000000
-	res, err = graph.ParameterizedQueryWithOptions("UNWIND range(0, $ub) AS v RETURN v", params, options);
+	res, err = graph.ParameterizedQueryWithOptions("UNWIND range(0, $ub) AS v RETURN v", params, options)
 	assert.Nil(t, res)
 	assert.NotNil(t, err)
 }

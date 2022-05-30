@@ -4,11 +4,12 @@ import (
 	"crypto/tls"
 	"crypto/x509"
 	"fmt"
-	"github.com/RedisGraph/redisgraph-go"
-	"github.com/gomodule/redigo/redis"
 	"io/ioutil"
 	"log"
 	"os"
+
+	"github.com/RedisGraph/redisgraph-go"
+	"github.com/gomodule/redigo/redis"
 )
 
 func ExampleGraphNew() {
@@ -22,7 +23,7 @@ func ExampleGraphNew() {
 	res.Next()
 	r := res.Record()
 	w := r.GetByIndex(0).(*redisgraph.Node)
-	fmt.Println(w.Label)
+	fmt.Println(w.Labels[0])
 	// Output: WorkPlace
 }
 
@@ -40,7 +41,7 @@ func ExampleGraphNew_pool() {
 	res.Next()
 	r := res.Record()
 	w := r.GetByIndex(0).(*redisgraph.Node)
-	fmt.Println(w.Label)
+	fmt.Println(w.Labels[0])
 	// Output: WorkPlace
 
 }
@@ -103,7 +104,7 @@ func ExampleGraphNew_tls() {
 	res.Next()
 	r := res.Record()
 	w := r.GetByIndex(0).(*redisgraph.Node)
-	fmt.Println(w.Label)
+	fmt.Println(w.Labels[0])
 }
 
 func getConnectionDetails() (host string, password string) {
