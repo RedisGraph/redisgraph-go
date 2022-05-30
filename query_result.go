@@ -71,7 +71,7 @@ func QueryResultNew(g *Graph, response interface{}) (*QueryResult, error) {
 			column_types: make([]ResultSetColumnTypes, 0),
 		},
 		graph:              g,
-		current_record_idx: -1,
+		currentRecordIdx: -1,
 	}
 
 	r, _ := redis.Values(response, nil)
@@ -297,8 +297,8 @@ func (qr *QueryResult) Next() bool {
 	if qr.Empty() {
 		return false
 	}
-	if qr.current_record_idx < len(qr.results)-1 {
-		qr.current_record_idx++
+	if qr.currentRecordIdx < len(qr.results)-1 {
+		qr.currentRecordIdx++
 		return true
 	} else {
 		return false
@@ -307,8 +307,8 @@ func (qr *QueryResult) Next() bool {
 
 // Record returns the current record.
 func (qr *QueryResult) Record() *Record {
-	if qr.current_record_idx >= 0 && qr.current_record_idx < len(qr.results) {
-		return qr.results[qr.current_record_idx]
+	if qr.currentRecordIdx >= 0 && qr.currentRecordIdx < len(qr.results) {
+		return qr.results[qr.currentRecordIdx]
 	} else {
 		return nil
 	}

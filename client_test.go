@@ -437,7 +437,7 @@ func TestMultiLabelNode(t *testing.T) {
 	assert.Nil(t, err)
 
 	// create a multi label node
-	multiLabelNode := NodeNew([]string{"A","B"}, nil)
+	multiLabelNode := NodeNew([]string{"A","B"}, "n", nil)
 	graph.AddNode(multiLabelNode)
 	res, err := graph.Commit()
 
