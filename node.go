@@ -5,7 +5,7 @@ import (
 	"strings"
 )
 
-// Node represents a node within a graph.
+// Node represents a node within a graph
 type Node struct {
 	ID         uint64
 	Labels     []string
@@ -14,6 +14,7 @@ type Node struct {
 	graph      *Graph
 }
 
+// Create a new Node
 func NodeNew(labels []string, alias string, properties map[string]interface{}) *Node {
 
 	p := properties
@@ -29,15 +30,18 @@ func NodeNew(labels []string, alias string, properties map[string]interface{}) *
 	}
 }
 
+// Asssign a new property to node
 func (n *Node) SetProperty(key string, value interface{}) {
 	n.Properties[key] = value
 }
 
+// Retrieves property from node
 func (n Node) GetProperty(key string) interface{} {
 	v, _ := n.Properties[key]
 	return v
 }
 
+// Returns a string representation of a node
 func (n Node) String() string {
 	if len(n.Properties) == 0 {
 		return "{}"
@@ -52,7 +56,7 @@ func (n Node) String() string {
 	return s
 }
 
-// String makes Node satisfy the Stringer interface.
+// String makes Node satisfy the Stringer interface
 func (n Node) Encode() string {
 	s := []string{"("}
 

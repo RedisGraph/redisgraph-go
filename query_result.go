@@ -59,7 +59,7 @@ type QueryResult struct {
 	header             QueryResultHeader
 	results            []*Record
 	statistics         map[string]float64
-	current_record_idx int
+	currentRecordIdx   int
 }
 
 func QueryResultNew(g *Graph, response interface{}) (*QueryResult, error) {
@@ -175,10 +175,10 @@ func (qr *QueryResult) parseNode(cell interface{}) *Node {
 
 	c, _ := redis.Values(cell, nil)
 	id, _ := redis.Uint64(c[0], nil)
-	label_ids, _ := redis.Ints(c[1], nil)
-	labels := make([]string, len(label_ids))
-	for i := 0; i < len(label_ids); i++ {
-		labels[i] = qr.graph.getLabel(label_ids[i])
+	labelIds, _ := redis.Ints(c[1], nil)
+	labels := make([]string, len(labelIds))
+	for i := 0; i < len(labelIds); i++ {
+		labels[i] = qr.graph.getLabel(labelIds[i])
 	}
 
 	rawProps, _ := redis.Values(c[2], nil)

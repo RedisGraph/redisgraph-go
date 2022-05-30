@@ -430,6 +430,29 @@ func TestUtils(t *testing.T) {
 	assert.Equal(t, res, "{object: {foo: 1}}")
 }
 
+func TestMultiLabelNode(t *testing.T) {
+	// clear database
+	graph.Flush()
+	err := graph.Delete()
+	assert.Nil(t, err)
+
+	// create a multi label node
+	multiLabelNode := NodeNew([]string{"A","B"}, nil)
+	graph.AddNode(multiLabelNode)
+	res, err := graph.Commit()
+
+	// fetch node
+	res, err = graph.Query("MATCH (n) RETURN n")
+	res.Next()
+	r := res.Record()
+	n := r.GetByIndex(0).(*Node)
+
+	// expecting 2 labels
+	assert.Equal(t, len(n.Labels), 2, "expecting 2 labels")
+	assert.Equal(t, n.Labels[0], "A")
+	assert.Equal(t, n.Labels[1], "B")
+}
+
 func TestNodeMapDatatype(t *testing.T) {
 	graph.Flush()
 	err := graph.Delete()
