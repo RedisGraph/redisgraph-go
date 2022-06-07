@@ -93,13 +93,10 @@ func (e Edge) Encode() string {
 			p = append(p, fmt.Sprintf("%s:%v", k, ToString(v)))
 		}
 
-		s = append(s, "{")
-		s = append(s, strings.Join(p, ","))
-		s = append(s, "}")
+		s = append(s, "{", strings.Join(p, ","), "}")
 	}
 
-	s = append(s, "]->")
-	s = append(s, "(", e.Destination.Alias, ")")
+	s = append(s, "]->", "(", e.Destination.Alias, ")")
 
 	return strings.Join(s, "")
 }

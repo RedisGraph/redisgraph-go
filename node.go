@@ -74,9 +74,7 @@ func (n Node) Encode() string {
 			p = append(p, fmt.Sprintf("%s:%v", k, ToString(v)))
 		}
 
-		s = append(s, "{")
-		s = append(s, strings.Join(p, ","))
-		s = append(s, "}")
+		s = append(s, "{", strings.Join(p, ","), "}")
 	}
 
 	s = append(s, ")")
