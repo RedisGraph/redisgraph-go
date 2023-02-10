@@ -55,11 +55,11 @@ type QueryResultHeader struct {
 
 // QueryResult represents the results of a query.
 type QueryResult struct {
-	graph              *Graph
-	header             QueryResultHeader
-	results            []*Record
-	statistics         map[string]float64
-	currentRecordIdx   int
+	graph            *Graph
+	header           QueryResultHeader
+	results          []*Record
+	statistics       map[string]float64
+	currentRecordIdx int
 }
 
 func QueryResultNew(g *Graph, response interface{}) (*QueryResult, error) {
@@ -70,7 +70,7 @@ func QueryResultNew(g *Graph, response interface{}) (*QueryResult, error) {
 			column_names: make([]string, 0),
 			column_types: make([]ResultSetColumnTypes, 0),
 		},
-		graph:              g,
+		graph:            g,
 		currentRecordIdx: -1,
 	}
 
@@ -251,7 +251,7 @@ func (qr *QueryResult) parseScalar(cell []interface{}) interface{} {
 		s, _ = redis.String(v, nil)
 
 	case VALUE_INTEGER:
-		s, _ = redis.Int(v, nil)
+		s, _ = redis.Int64(v, nil)
 
 	case VALUE_BOOLEAN:
 		s, _ = redis.Bool(v, nil)

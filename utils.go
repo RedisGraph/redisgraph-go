@@ -3,8 +3,8 @@ package redisgraph
 import (
 	"crypto/rand"
 	"fmt"
-	"strings"
 	"strconv"
+	"strings"
 )
 
 // go array to string is [1 2 3] for [1, 2, 3] array
@@ -32,35 +32,39 @@ func strArrayToString(arr []string) string {
 func mapToString(data map[string]interface{}) string {
 	pairsArray := []string{}
 	for k, v := range data {
-		pairsArray = append(pairsArray, k + ": " + ToString(v))
+		pairsArray = append(pairsArray, k+": "+ToString(v))
 	}
 	return "{" + strings.Join(pairsArray, ",") + "}"
 }
 
 func ToString(i interface{}) string {
-	if(i == nil) {
+	if i == nil {
 		return "null"
 	}
 
-	switch i.(type) {
+	switch val := i.(type) {
 	case string:
-		s := i.(string)
-		return strconv.Quote(s)
+		return strconv.Quote(val)
+	case fmt.Stringer:
+		return strconv.Quote(val.String())
 	case int:
-		return strconv.Itoa(i.(int))
+		return strconv.Itoa(val)
+	case int32:
+		return strconv.FormatInt(int64(val), 10)
+	case int64:
+		return strconv.FormatInt(val, 10)
+	case float32:
+		return strconv.FormatFloat(float64(val), 'f', -1, 64)
 	case float64:
-		return strconv.FormatFloat(i.(float64), 'f', -1, 64)
+		return strconv.FormatFloat(val, 'f', -1, 64)
 	case bool:
-		return strconv.FormatBool(i.(bool))
+		return strconv.FormatBool(val)
 	case []interface{}:
-		arr := i.([]interface{})
-		return arrayToString(arr)
+		return arrayToString(val)
 	case map[string]interface{}:
-		data := i.(map[string]interface{})
-		return mapToString(data)
+		return mapToString(val)
 	case []string:
-		arr := i.([]string)
-		return strArrayToString(arr)
+		return strArrayToString(val)
 	default:
 		panic("Unrecognized type to convert to string")
 	}
@@ -91,7 +95,7 @@ func RandomString(n int) string {
 	return string(output)
 }
 
-func BuildParamsHeader(params map[string]interface{}) (string) {
+func BuildParamsHeader(params map[string]interface{}) string {
 	header := "CYPHER "
 	for key, value := range params {
 		header += fmt.Sprintf("%s=%v ", key, ToString(value))

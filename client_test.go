@@ -1,6 +1,7 @@
 package redisgraph
 
 import (
+	"fmt"
 	"os"
 	"testing"
 
@@ -10,8 +11,10 @@ import (
 
 var graph Graph
 
+const port = 6379
+
 func createGraph() {
-	conn, _ := redis.Dial("tcp", "0.0.0.0:6379")
+	conn, _ := redis.Dial("tcp", fmt.Sprintf("0.0.0.0:%d", port))
 	conn.Do("FLUSHALL")
 	graph = GraphNew("social", conn)
 
@@ -98,14 +101,14 @@ func checkQueryResults(t *testing.T, res *QueryResult) {
 	assert.Equal(t, len(s.Properties), 4, "Person node should have 4 properties")
 
 	assert.Equal(t, s.GetProperty("name"), "John Doe", "Unexpected property value.")
-	assert.Equal(t, s.GetProperty("age"), 33, "Unexpected property value.")
+	assert.Equal(t, s.GetProperty("age"), int64(33), "Unexpected property value.")
 	assert.Equal(t, s.GetProperty("gender"), "male", "Unexpected property value.")
 	assert.Equal(t, s.GetProperty("status"), "single", "Unexpected property value.")
 
-	assert.Equal(t, e.GetProperty("year"), 2017, "Unexpected property value.")
+	assert.Equal(t, e.GetProperty("year"), int64(2017), "Unexpected property value.")
 
 	assert.Equal(t, d.GetProperty("name"), "Japan", "Unexpected property value.")
-	assert.Equal(t, d.GetProperty("population"), 126800000, "Unexpected property value.")
+	assert.Equal(t, d.GetProperty("population"), int64(126800000), "Unexpected property value.")
 }
 
 func TestCreateQuery(t *testing.T) {
@@ -177,7 +180,7 @@ func TestArray(t *testing.T) {
 	res.Next()
 	r := res.Record()
 	assert.Equal(t, len(res.results), 1, "expecting 1 result record")
-	assert.Equal(t, []interface{}{0, 1, 2}, r.GetByIndex(0))
+	assert.Equal(t, []interface{}{int64(0), int64(1), int64(2)}, r.GetByIndex(0))
 
 	q = "unwind([0,1,2]) as x return x"
 	res, err = graph.Query(q)
@@ -186,7 +189,7 @@ func TestArray(t *testing.T) {
 	}
 	assert.Equal(t, len(res.results), 3, "expecting 3 result record")
 
-	i := 0
+	i := int64(0)
 	for res.Next() {
 		r = res.Record()
 		assert.Equal(t, i, r.GetByIndex(0))
@@ -203,12 +206,12 @@ func TestArray(t *testing.T) {
 	b := NodeNew([]string{"person"}, "", nil)
 
 	a.SetProperty("name", "a")
-	a.SetProperty("age", 32)
-	a.SetProperty("array", []interface{}{0, 1, 2})
+	a.SetProperty("age", int64(32))
+	a.SetProperty("array", []interface{}{int64(0), int64(1), int64(2)})
 
 	b.SetProperty("name", "b")
-	b.SetProperty("age", 30)
-	b.SetProperty("array", []interface{}{3, 4, 5})
+	b.SetProperty("age", int64(30))
+	b.SetProperty("array", []interface{}{int64(3), int64(4), int64(5)})
 
 	assert.Equal(t, 1, len(res.results), "expecting 1 results record")
 
@@ -248,8 +251,8 @@ func TestMap(t *testing.T) {
 	r := res.Record()
 	mapval := r.GetByIndex(0).(map[string]interface{})
 
-	inner_map := map[string]interface{}{"x": []interface{}{1}}
-	expected := map[string]interface{}{"val_1": 5, "val_2": "str", "inner": inner_map}
+	inner_map := map[string]interface{}{"x": []interface{}{int64(1)}}
+	expected := map[string]interface{}{"val_1": int64(5), "val_2": "str", "inner": inner_map}
 	assert.Equal(t, mapval, expected, "expecting a map literal")
 
 	q = "MATCH (a:Country) RETURN a { .name }"
@@ -295,20 +298,20 @@ func TestPath(t *testing.T) {
 	assert.Equal(t, len(s.Properties), 4, "Person node should have 4 properties")
 
 	assert.Equal(t, s.GetProperty("name"), "John Doe", "Unexpected property value.")
-	assert.Equal(t, s.GetProperty("age"), 33, "Unexpected property value.")
+	assert.Equal(t, s.GetProperty("age"), int64(33), "Unexpected property value.")
 	assert.Equal(t, s.GetProperty("gender"), "male", "Unexpected property value.")
 	assert.Equal(t, s.GetProperty("status"), "single", "Unexpected property value.")
 
-	assert.Equal(t, e.GetProperty("year"), 2017, "Unexpected property value.")
+	assert.Equal(t, e.GetProperty("year"), int64(2017), "Unexpected property value.")
 
 	assert.Equal(t, d.GetProperty("name"), "Japan", "Unexpected property value.")
-	assert.Equal(t, d.GetProperty("population"), 126800000, "Unexpected property value.")
+	assert.Equal(t, d.GetProperty("population"), int64(126800000), "Unexpected property value.")
 
 }
 
 func TestParameterizedQuery(t *testing.T) {
 	createGraph()
-	params := []interface{}{1, 2.3, "str", true, false, nil, []interface{}{0, 1, 2}, []interface{}{"0", "1", "2"}}
+	params := []interface{}{int64(1), 2.3, "str", true, false, nil, []interface{}{int64(0), int64(1), int64(2)}, []interface{}{"0", "1", "2"}}
 	q := "RETURN $param"
 	params_map := make(map[string]interface{})
 	for index, param := range params {
@@ -437,7 +440,7 @@ func TestMultiLabelNode(t *testing.T) {
 	assert.Nil(t, err)
 
 	// create a multi label node
-	multiLabelNode := NodeNew([]string{"A","B"}, "n", nil)
+	multiLabelNode := NodeNew([]string{"A", "B"}, "n", nil)
 	graph.AddNode(multiLabelNode)
 	_, err = graph.Commit()
 	assert.Nil(t, err)
