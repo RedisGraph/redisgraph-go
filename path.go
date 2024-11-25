@@ -19,10 +19,10 @@ func PathNew(nodes []interface{}, edges []interface{}) Path {
 	for i := 0; i < len(edges); i++ {
 		Edges[i] = edges[i].(*Edge)
 	}
-	
-	return Path{	
-		Edges : Edges,
-		Nodes : Nodes,
+
+	return Path{
+		Edges: Edges,
+		Nodes: Nodes,
 	}
 }
 
@@ -63,16 +63,15 @@ func (p Path) String() string {
 	edgeCount := p.EdgeCount()
 	for i := 0; i < edgeCount; i++ {
 		var node = p.GetNode(i)
-		s = append(s, "(" , fmt.Sprintf("%v", node.ID) , ")")
+		s = append(s, "(", fmt.Sprintf("%v", node.ID), ")")
 		var edge = p.GetEdge(i)
 		if node.ID == edge.srcNodeID {
-			s = append(s, "-[" , fmt.Sprintf("%v", edge.ID) , "]->")
+			s = append(s, "-[", fmt.Sprintf("%v", edge.ID), "]->")
 		} else {
-			s= append(s, "<-[" , fmt.Sprintf("%v", edge.ID) , "]-")
+			s = append(s, "<-[", fmt.Sprintf("%v", edge.ID), "]-")
 		}
 	}
-	s = append(s, "(" , fmt.Sprintf("%v", p.GetNode(edgeCount).ID) , ")")
-	s = append(s, ">")
+	s = append(s, "(", fmt.Sprintf("%v", p.GetNode(edgeCount).ID), ")", ">")
 
 	return strings.Join(s, "")
 }
