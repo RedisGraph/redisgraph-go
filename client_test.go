@@ -265,6 +265,22 @@ func TestMap(t *testing.T) {
 	assert.Equal(t, mapval, expected, "expecting a map projection")
 }
 
+func TestPoint(t *testing.T) {
+	createGraph()
+
+	q := "RETURN point({latitude: -33.8567844, longitude: 151.213108})"
+	res, err := graph.Query(q)
+	if err != nil {
+		t.Error(err)
+	}
+	res.Next()
+	r := res.Record()
+	pointval := r.GetByIndex(0).(map[string]float64)
+
+	expected := map[string]float64{"latitude": -33.8567844, "longitude": 151.213108}
+	assert.InDeltaMapValues(t, pointval, expected, 0.001, "expecting a point map")
+}
+
 func TestPath(t *testing.T) {
 	createGraph()
 	q := "MATCH p = (:Person)-[:Visited]->(:Country) RETURN p"
