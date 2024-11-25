@@ -8,9 +8,19 @@ import (
 	"github.com/gomodule/redigo/redis"
 )
 
+// QueryMode is the query mode
+type QueryMode string
+
+const (
+	// ReadQuery is a read query
+	ReadQuery QueryMode = "READ"
+	// WriteQuery is a write query
+	WriteQuery QueryMode = "WRITE"
+)
+
 // QueryOptions are a set of additional arguments to be emitted with a query.
 type QueryOptions struct {
-	timeout           int
+	timeout int
 }
 
 // Graph represents a graph, which is a collection of nodes and edges.
@@ -110,7 +120,7 @@ func (g *Graph) Commit() (*QueryResult, error) {
 // NewQueryOptions instantiates a new QueryOptions struct.
 func NewQueryOptions() *QueryOptions {
 	return &QueryOptions{
-		timeout:               -1,
+		timeout: -1,
 	}
 }
 
@@ -147,17 +157,17 @@ func (g *Graph) ROQuery(q string) (*QueryResult, error) {
 }
 
 func (g *Graph) ParameterizedQuery(q string, params map[string]interface{}) (*QueryResult, error) {
-	if(params != nil){
+	if params != nil {
 		q = BuildParamsHeader(params) + q
 	}
-	return g.Query(q);
+	return g.Query(q)
 }
 
 // QueryWithOptions issues a query with the given timeout
 func (g *Graph) QueryWithOptions(q string, options *QueryOptions) (*QueryResult, error) {
 	var r interface{}
 	var err error
-	if(options.timeout >= 0) {
+	if options.timeout >= 0 {
 		r, err = g.Conn.Do("GRAPH.QUERY", g.Id, q, "--compact", "timeout", options.timeout)
 	} else {
 		r, err = g.Conn.Do("GRAPH.QUERY", g.Id, q, "--compact")
@@ -171,17 +181,17 @@ func (g *Graph) QueryWithOptions(q string, options *QueryOptions) (*QueryResult,
 
 // ParameterizedQueryWithOptions issues a parameterized query with the given timeout
 func (g *Graph) ParameterizedQueryWithOptions(q string, params map[string]interface{}, options *QueryOptions) (*QueryResult, error) {
-	if(params != nil){
+	if params != nil {
 		q = BuildParamsHeader(params) + q
 	}
-	return g.QueryWithOptions(q, options);
+	return g.QueryWithOptions(q, options)
 }
 
 // ROQueryWithOptions issues a read-only query with the given timeout
 func (g *Graph) ROQueryWithOptions(q string, options *QueryOptions) (*QueryResult, error) {
 	var r interface{}
 	var err error
-	if(options.timeout >= 0) {
+	if options.timeout >= 0 {
 		r, err = g.Conn.Do("GRAPH.RO_QUERY", g.Id, q, "--compact", "timeout", options.timeout)
 	} else {
 		r, err = g.Conn.Do("GRAPH.RO_QUERY", g.Id, q, "--compact")
@@ -263,7 +273,7 @@ func (g *Graph) getProperty(propIdx int) string {
 // Procedures
 
 // CallProcedure invokes procedure.
-func (g *Graph) CallProcedure(procedure string, yield []string, args ...interface{}) (*QueryResult, error) {
+func (g *Graph) CallProcedure(procedure string, yield []string, mode QueryMode, args ...interface{}) (*QueryResult, error) {
 	q := fmt.Sprintf("CALL %s(", procedure)
 
 	tmp := make([]string, 0, len(args))
@@ -276,12 +286,16 @@ func (g *Graph) CallProcedure(procedure string, yield []string, args ...interfac
 		q += fmt.Sprintf(" YIELD %s", strings.Join(yield, ","))
 	}
 
+	if mode == ReadQuery {
+		return g.ROQuery(q)
+	}
+
 	return g.Query(q)
 }
 
 // Labels, retrieves all node labels.
 func (g *Graph) Labels() []string {
-	qr, _ := g.CallProcedure("db.labels", nil)
+	qr, _ := g.CallProcedure("db.labels", nil, ReadQuery)
 
 	l := make([]string, len(qr.results))
 
@@ -293,7 +307,7 @@ func (g *Graph) Labels() []string {
 
 // RelationshipTypes, retrieves all edge relationship types.
 func (g *Graph) RelationshipTypes() []string {
-	qr, _ := g.CallProcedure("db.relationshipTypes", nil)
+	qr, _ := g.CallProcedure("db.relationshipTypes", nil, ReadQuery)
 
 	rt := make([]string, len(qr.results))
 
@@ -305,7 +319,7 @@ func (g *Graph) RelationshipTypes() []string {
 
 // PropertyKeys, retrieves all properties names.
 func (g *Graph) PropertyKeys() []string {
-	qr, _ := g.CallProcedure("db.propertyKeys", nil)
+	qr, _ := g.CallProcedure("db.propertyKeys", nil, ReadQuery)
 
 	p := make([]string, len(qr.results))
 
