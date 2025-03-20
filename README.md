@@ -147,3 +147,6 @@ The tests expect a Redis server with the RedisGraph module loaded to be availabl
 ## License
 
 redisgraph-go is distributed under the BSD3 license - see [LICENSE](LICENSE)
+
+
+Minor update to documentation.
